@@ -3,6 +3,8 @@
 #include <ctype.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
+#include <stdlib.h>
 
 int getopt (int argc, char * const argv[],
                   const char *optstring);
@@ -16,6 +18,7 @@ int SIZE_GRID = 1;
 int NB_ITER = 10000;
 int STEP = 0;
 int NB_THREADS = 4;
+clock_t start, end;
 
 int isNumber(char * s){
 	int i = 0;
@@ -42,6 +45,12 @@ void checkOptions(int argc, char * argv[]){
 	      break;
 	    case 'm':
 	      printf("option m\n");
+	      start = clock();
+	      /*quand le scénario est fini :
+			end = clock();
+			double total = (double) (end - start) / CLOCKS_PER_SEC;
+			printf("Temps total de consommation CPU: %f\n", total);
+			*/
 	      break;
 	    case 'M':
 	      printf("option M\n");

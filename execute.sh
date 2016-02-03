@@ -18,7 +18,7 @@ echo "-------------------------------------------------------"
 for j in 0 2 4
 do
 	let "s = $j + 4"
-	for ((x=1, size=2; x<s; x++)); do ((size *= 2)); done
+	for ((x = 1, size = 2; x < s; x++)); do ((size *= 2)); done
 	echo -e "\t*** Plaque de $size*$size, avec 1 thread ***" 
 	#echo "s = $j " #verif
 	./heatTransfer  -i 10000 -e $i -s $j -t 0 -m
@@ -32,7 +32,7 @@ do
     for j in 0 2 4
     do
     	let "s = $j + 4"
-    	for ((x=1, size=2; x<s; x++)); do ((size *= 2)); done
+    	for ((x = 1, size = 2; x < s; x++)); do ((size *= 2)); done
     	for k in 1 3
     	do
     		for ((x=1, threads=4; x<$k; x++)); do ((threads *= 4)); done
