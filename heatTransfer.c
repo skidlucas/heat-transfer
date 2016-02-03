@@ -32,11 +32,9 @@ void checkOptions(int argc, char * argv[]){
 }
 
 int processTab(int * tab){
-	int i = 0;
-	while(i < 7){
-		int valeur = tab[3];
-
-	}
+	int i = 3;
+	int valeur = tab[3];
+	while(i >= 0)
 }
 
 int main(int argc, char * argv[]){
