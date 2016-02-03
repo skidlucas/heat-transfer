@@ -4,13 +4,13 @@ OBJ_FICHIER = heatTransfer.c
 
 EXE = heatTransfer
 
-OPTION = 
+OPTION = -std=c11
 
 all: $(EXE)
 	
 #Exécutable
 heatTransfer:
-	$(CC) $(OPTION) $(OBJ_FICHIER) -o $(EXE)
+	$(CC) $(OPTION) $(OBJ_FICHIER) -lm -o $(EXE)
 
 clean: 
 	rm -vf heatTransfer
