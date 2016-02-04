@@ -30,6 +30,12 @@ int isNumber(char * s){
     return 1;
 }
 
+typedef struct {
+	double valN;
+	double valNPlus1;
+	int isHeating;
+} caseInMat;
+
 void checkOptions(int argc, char * argv[]){
 	int c;
 	while ((c = getopt(argc , argv, "s:mMai:e:t:")) != -1){
@@ -91,19 +97,25 @@ void checkOptions(int argc, char * argv[]){
 	}
 }
 
-/*a test*/
-void placeRedCase(int ** mat, int n, int val){
-	int minInd = pow(2.0, n - 1) - pow(2.0, n - 4);
+void placeRedCase(caseInMat ** mat, int n, int val){
+	/*int minInd = pow(2.0, n - 1) - pow(2.0, n - 4);
 	int maxInd = pow(2.0, n - 1) + pow(2.0, n - 4);
-	printf("min ind = %d", minInd);
-	printf("maxInd ind = %d", maxInd);
+	printf("min ind = %d\n", minInd);
+	printf("maxInd ind = %d\n", maxInd);*/
+	int minInd = (1 << n-1) - (1 << n-4);// pow(2.0, n - 4);
+	int maxInd = (1 << n-1) + (1 << n-4);;
+	printf("min ind = %d\n", minInd);
+	printf("maxInd ind = %d\n", maxInd);
 	for(int i = minInd ; i < maxInd ; ++i){
 		for(int j = minInd ; j < maxInd ; ++j){
-			mat[i][j] = val;
+			mat[i][j].valN = val;
+			mat[i][j].valNPlus1 = val;
+			mat[i][j].isHeating = 1;
 		}
 	}
 }
 
+/*
 int ** createMatrice(int hauteur, int largeur){
 	int ** mat2 = (int **)malloc(hauteur * sizeof(int));
 	for(int i = 0 ; i < hauteur ; ++i)
@@ -114,8 +126,26 @@ int ** createMatrice(int hauteur, int largeur){
 		}
 	}
 	return mat2;
+}*/
+
+caseInMat ** createMatrice(int hauteur, int largeur){
+	printf("before malloc");
+	caseInMat ** mat2 = (caseInMat **)malloc(hauteur * sizeof(caseInMat));
+	for(int i = 0 ; i < hauteur ; ++i)
+		mat2[i] = (caseInMat *)malloc(largeur * sizeof(caseInMat));
+	printf("after malloc\n");
+	for(int i = 0 ; i < hauteur ; ++i){
+		for(int j = 0 ; j < largeur ; ++j){
+			//caseInMat tmp = {0,0,0};
+			mat2[i][j].valN = 0;
+			mat2[i][j].valNPlus1 = 0;
+			mat2[i][j].isHeating = 0;
+		}
+	}
+	return mat2;
 }
 
+/*
 void printMatrice(int ** mat, int largeur , int hauteur){
 	for(int i = 0 ; i < largeur ; ++i){
 		for(int j = 0 ; j < hauteur ; ++j){
@@ -123,32 +153,50 @@ void printMatrice(int ** mat, int largeur , int hauteur){
 		}
 		printf("\n");
 	}
+}*/
+
+
+void printMatrice(caseInMat ** mat, int largeur , int hauteur, FILE * fic){
+	for(int i = 0 ; i < largeur ; ++i){
+		for(int j = 0 ; j < hauteur ; ++j){
+			fprintf(fic, "|%f|", round(mat[i][j].valN*100)/100);
+		}
+		fprintf(fic,"\n");
+	}
 }
 
 
-void copyMat(int ** toMat, int ** fromMat, int hauteur, int largeur){
+void updateMat(caseInMat ** mat, int hauteur, int largeur){
 	for(int i = 0 ; i < largeur ; ++i){
 		for(int j = 0 ; j < hauteur ; ++j){
-			toMat[i][j] = fromMat[i][j];
+			if(! mat[i][j].isHeating){
+				mat[i][j].valN = mat[i][j].valNPlus1;
+				mat[i][j].valNPlus1 = 0;
+			} else 
+				mat[i][j].valNPlus1 = mat[i][j].valN;
 		}
 	}
 }
 
-void processMatInLine(int ** mat, int hauteur, int largeur){
-	int ** newMat = createMatrice(hauteur, largeur);
+void processMatInLine(caseInMat ** mat, int hauteur, int largeur){
 	for(int i = 0 ; i < largeur ; ++i){
 		for(int j = 0 ; j < hauteur ; ++j){
-			if(mat[i][j] == 0) continue;
-			int valDeb = mat[i][j];
-			newMat[i][j - 1] += valDeb * 4/36;
-			newMat[i][j + 1] += valDeb * 4/36;
-			newMat[i][j] = valDeb * 16/36; 
+			if(mat[i][j].valN == 0) continue;
+		//	printf("N = %f\n", mat[i][j].valN);
+			double valDeb = mat[i][j].valN;
+			mat[i][j - 1].valNPlus1 += valDeb * 4/36;
+			mat[i][j + 1].valNPlus1 = valDeb * 4/36;
+		//	printf("J + 1 %f\n", mat[i][j + 1].valNPlus1);
+			mat[i][j].valNPlus1 += valDeb * 16/36; 
+		//	printf("N + 1 %f\n", mat[i][j].valNPlus1);
 		}
 	}
-	copyMat(mat, newMat, hauteur, largeur);
+	updateMat(mat, hauteur, largeur);
 }
 
 int main(int argc, char * argv[]){
+	FILE* fichier = fopen("test.txt", "w+");
+	printf("startmain\n");
 	//checkOptions(argc, argv);
 	/*int tableau[7];
 	int nbIter = 4;
@@ -162,10 +210,17 @@ int main(int argc, char * argv[]){
 	}
 	printMatrice(&mat, 3, 3);*/
 
-	int ** mat = createMatrice(3,3);
+	/*int ** mat = createMatrice(3,3);
 	mat[0][1] = 36;
 	//placeRedCase(mat2, 4, 10);
 	processMatInLine(mat, 3, 3);
-	printMatrice(mat, 3, 3);
+	printMatrice(mat, 3, 3);*/
+	caseInMat ** mat = createMatrice(16,16);
+	printf("after create\n");
+	placeRedCase(mat, 4, 36);
+	for(int i = 0 ; i < 3 ; ++i){
+		processMatInLine(mat, 16, 16);	
+	}
+	printMatrice(mat, 16,16, fichier);
 	return 0;
 } 
