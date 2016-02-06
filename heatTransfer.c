@@ -170,14 +170,15 @@ void updateMat(caseInMat ** mat, int height, int width ){
 	for(int i = 0 ; i < width  ; ++i){
 		for(int j = 0 ; j < height ; ++j){
 			if(! mat[i][j].isHeating){
-				mat[i][j].valN = mat[i][j].valNPlus1;
-				mat[i][j].valNPlus1 = 0;
+				mat[i][j].valN = mat[i][j].valN * 16/36 + mat[i][j].valNPlus1;
+				mat[i][j].valNPlus1 = 0.0;
 			} else 
 				mat[i][j].valNPlus1 = mat[i][j].valN;
 		}
 	}
 }
 
+/* test pour pas sortir de la matrice a faire */
 void processMatInLine(caseInMat ** mat, int height, int width ){
 	for(int i = 0 ; i < width  ; ++i){
 		for(int j = 0 ; j < height ; ++j){
@@ -185,13 +186,28 @@ void processMatInLine(caseInMat ** mat, int height, int width ){
 		//	printf("N = %f\n", mat[i][j].valN);
 			double valDeb = mat[i][j].valN;
 			mat[i][j - 1].valNPlus1 += valDeb * 4/36;
-			mat[i][j + 1].valNPlus1 = valDeb * 4/36;
+			mat[i][j + 1].valNPlus1 += valDeb * 4/36;
 		//	printf("J + 1 %f\n", mat[i][j + 1].valNPlus1);
-			mat[i][j].valNPlus1 += valDeb * 16/36; 
+		//	mat[i][j].valNPlus1 += valDeb * 16/36; 
 		//	printf("N + 1 %f\n", mat[i][j].valNPlus1);
 		}
 	}
-	updateMat(mat, height, width );
+}
+
+/* test pour pas sortir de la matrice a faire */
+void processMatInCol(caseInMat ** mat, int height, int width){
+	for(int i = 0 ; i < width  ; ++i){
+		for(int j = 0 ; j < height ; ++j){
+			if(mat[i][j].valN == 0) continue;
+			double valDeb = mat[i][j].valN;
+			mat[i - 1][j - 1].valNPlus1 += valDeb * 1/36;
+			mat[i + 1][j - 1].valNPlus1 += valDeb * 1/36;
+			mat[i - 1][j].valNPlus1 += valDeb * 4/36;
+			mat[i + 1][j].valNPlus1 += valDeb * 4/36;
+			mat[i - 1][j + 1].valNPlus1 += valDeb * 1/36;
+			mat[i + 1][j + 1].valNPlus1 += valDeb * 1/36;    
+		}
+	}
 }
 
 int main(int argc, char * argv[]){
@@ -218,9 +234,13 @@ int main(int argc, char * argv[]){
 	caseInMat ** mat = createMatrix(16,16);
 	printf("after create\n");
 	placeRedCase(mat, 4, 36);
-	for(int i = 0 ; i < 3 ; ++i){
+	/*for(int i = 0 ; i < 3 ; ++i){
 		processMatInLine(mat, 16, 16);	
-	}
+	}*/
+	processMatInCol(mat, 16, 16);
+	updateMat(mat, 16, 16 );
+	processMatInCol(mat, 16, 16);
+	updateMat(mat, 16, 16 );
 	printMatrix(mat, 16,16, fichier);
 	return 0;
 } 
