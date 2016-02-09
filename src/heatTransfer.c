@@ -16,8 +16,8 @@
 
 //Positionne les cases centrales comme les cases chauffantes en fonction de la taille de la matrice
 void positionneCaseChauffante(caseDansMat ** mat, int N, double temp_chaude){
-	int minInd = (1 << N - 1) - (1 << N - 4);
-	int maxInd = (1 << N - 1) + (1 << N - 4);
+	int minInd = (1 << (N - 1)) - (1 << (N - 4));
+	int maxInd = (1 << (N - 1)) + (1 << (N - 4));
 	for(int i = minInd ; i < maxInd ; ++i){
 		for(int j = minInd ; j < maxInd ; ++j){
 			mat[i][j].valN = temp_chaude;
@@ -34,7 +34,7 @@ void simulationChaqueCase(caseDansMat ** mat, int taille, int i, int j, double c
 	   j < 0 || j >= taille ||
 	   mat[i][j].valN == temp_froid)
 		return;
-	//On calcul la chaleur transmise aux voisins horizontaux et verticaux
+	//On calcule la chaleur transmise aux voisins horizontaux et verticaux
 	double chaleurHoriVert = mat[i][j].valN * coefHori; // remplacer constante
 	//affectation aux horizontaux verification pour pas sortir de la matrice
 	if(j - 1 >= 0)
@@ -46,7 +46,7 @@ void simulationChaqueCase(caseDansMat ** mat, int taille, int i, int j, double c
 		mat[i - 1][j].valNPlus1 += chaleurHoriVert;
 	if(i + 1 < taille)		
 		mat[i + 1][j].valNPlus1 += chaleurHoriVert;
-	//On calcul la chaleur transmise aux voisins diagonaux
+	//On calcule la chaleur transmise aux voisins diagonaux
 	double chaleurDiag = mat[i][j].valN * coefDiag;
 	if(j - 1 >= 0 && i - 1 >= 0)
 		mat[i - 1][j - 1].valNPlus1 += chaleurDiag;

@@ -4,7 +4,8 @@
 #          Script permettant d'exécuter le programme heatTransfer avec
 #		   les options par défaut fournies dans le sujet du projet.
 # ------------------------------------------------------------------
-
+echo "Compilation du programme"
+make
 echo "Exécution du programme avec les options par défaut: "
 echo " - pour tous les scénarios implémentés (-e 0..5)"
 echo " - avec une plaque de taille 16*16, puis 128*128 et enfin 256*256 (-s 0, -s 2, -s 4)"
@@ -21,7 +22,7 @@ do
 	for ((x = 1, size = 2; x < s; x++)); do ((size *= 2)); done
 	echo -e "\t*** Plaque de $size*$size, avec 1 thread ***" 
 	#echo "s = $j " #verif
-	./heatTransfer  -i 10000 -e $i -s $j -t 0 -m
+	./bin/heatTransfer  -i 10000 -e $i -s $j -t 0 -m
 done
 
 for i in {1..5}
@@ -39,7 +40,7 @@ do
 
     		echo -e "\t*** Plaque de $size*$size, avec $threads threads ***" 
     		#echo "s = $j et t = $k" #pour vérif que les args sont bons
-    		./heatTransfer  -i 10000 -e $i -s $j -t $k -m
+    		./bin/heatTransfer  -i 10000 -e $i -s $j -t $k -m
     	done
     done
 done
