@@ -119,5 +119,6 @@ int main(int argc, char * argv[]){
 	for(int i = 0 ; i < NB_ITER ; ++i)
 		simulationIteration(mat, SIZE_GRID, coefCase, coefHori, coefDiag, TEMP_FROID);
 	afficheMatriceFile(mat, SIZE_GRID, fichier);
+	suppressionMatrice(mat, SIZE_GRID);
 	return 0;
 } 

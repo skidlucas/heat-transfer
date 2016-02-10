@@ -29,4 +29,4 @@ void afficheMatriceFile(caseDansMat ** mat, int taille, FILE * fic);
 void miseAJourMatrice(caseDansMat ** mat, int taille, double coefSurCase, double temp_froid);
 
 //Supprime la matrice en paramètre
-void suppressionMatrice(caseDansMat ** mat);
+void suppressionMatrice(caseDansMat ** mat, int taille);

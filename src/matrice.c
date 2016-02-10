@@ -63,6 +63,8 @@ void miseAJourMatrice(caseDansMat ** mat, int taille, double coefSurCase, double
 }
 
 //Supprime la matrice en paramètre
-void suppressionMatrice(caseDansMat ** mat){
-
+void suppressionMatrice(caseDansMat ** mat, int taille){
+	for(int i = 0 ; i < taille ; ++i)
+		free(mat[i]);
+	free(mat);
 }
