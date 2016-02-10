@@ -1,26 +1,28 @@
+SRC=./src
+BIN=./bin
+
 CC = gcc
+CCFLAGS = -g -std=c11 -Wall
+CC_COMPILE = $(CC) $(CCFLAGS)
 
-OBJ_FICHIER = heatTransfer.c
+EXEC = ./bin/heatTransfer
 
-EXE = heatTransfer
+SRC_FILES = $(wildcard $(SRC)/*.c)
+OBJ_FILES = $(patsubst $(SRC)/%.c, $(BIN)/%.o, $(SRC_FILES))
 
-OPTION = -std=c11 -Wall
+# Targets
 
-SRC = ./src/
+all: $(EXEC)
 
-BIN = ./bin/
 
-all: $(EXE)
-	
-#Exécutable
-heatTransfer: heatTransfer.o
-	$(CC) $(OPTION) $(BIN)heatTransfer.o $(BIN)matrice.o $(SRC)main.c -lm -o $(BIN)$(EXE)
+$(EXEC): $(OBJ_FILES)
+	$(CC_COMPILE) $^ -o $@ -lm
 
-matrice.o:
-	$(CC) $(OPTION) -c $(SRC)matrice.c -l $(SRC)matrice.h  -lm -o $(BIN)matrice.o
+$(OBJ_FILES): $(BIN)/%.o : $(SRC)/%.c
+	$(CC_COMPILE) -c $< -o $@
 
-heatTransfer.o: matrice.o
-	$(CC) $(OPTION) -c $(SRC)heatTransfer.c -l $(SRC)heatTransfer.h $(BIN)matrice.o -lm -o $(BIN)heatTransfer.o 
+# Clean
 
-clean: 
-	rm -vf ./bin/*
+clean:
+	rm -rf $(BIN)/*
+
