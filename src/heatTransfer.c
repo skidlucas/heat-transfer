@@ -60,7 +60,6 @@ void simulationChaqueCase(caseDansMat ** mat, int taille, int i, int j, double c
 
 //Simule une itération de propagation de chaleur
 void simulationIteration(caseDansMat ** mat, int taille, double coefCase, double coefHori, double coefDiag, double temp_froid){
-	printf("debut maj = %f\n", coefCase);
 	for(int i = 0 ; i < taille  ; ++i){
 		for(int j = 0 ; j < taille ; ++j){
 			simulationChaqueCase(mat, taille, i, j, coefHori, coefDiag, temp_froid);

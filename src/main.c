@@ -37,10 +37,10 @@ enum Flags {
 
 int flags;
 int N = 4;
-int SIZE_GRID = 16;
+int TAILLE_GRILLE = 1;
 int NB_ITER = 10000;
-int STEP = 0;
-int NB_THREADS = 4;
+int ETAPE = 0;
+int NB_THREADS = 1;
 clock_t start, end;
 double TEMP_FROID = 0.0;
 double TEMP_CHAUD = 10000.0;
@@ -63,9 +63,9 @@ void checkOptions(int argc, char * argv[]){
 	      flags += OPT_S;
 	      printf("option s\n");  //tmp
 	      if(strlen(optarg) == 1 && isdigit(optarg[0])){
-	      	N = atoi(optarg);
-	      	SIZE_GRID = SIZE_GRID << (atoi(optarg) + 4);
-	      	printf("size_grid = %d\n", SIZE_GRID); //tmp
+	      	//N = atoi(optarg); c'est quoi ce N ?
+	      	TAILLE_GRILLE = TAILLE_GRILLE << (atoi(optarg) + 4);
+	      	printf("TAILLE_GRILLE = %d\n", TAILLE_GRILLE); //tmp
 	      } else {
 	      	printf("Argument error : a number (0 <= x <= 9) was expected.\n");
 	      }
@@ -90,24 +90,42 @@ void checkOptions(int argc, char * argv[]){
 	      	NB_ITER = atoi(optarg);
 	      	printf("nb_iter = %d\n", NB_ITER); //tmp
 	      } else {
-	      	printf("Argument error : a number (> 0) was expected.\n");
+	      	printf("Erreur d'argument : un nombre supérieur à 0 est attendu.\n");
 	      }
 	      break;
 	    case 'e':
 	      flags += OPT_E;
 	      printf("option e\n");
-	      // comme s mais en vérifiant 0 <= optarg <= 5
-	      // chercher la meilleure manière de faire
 
-	      //STEP = atoi(optarg);
+	      if(strlen(optarg) == 1 && isdigit(optarg[0])){
+	      	int tmp = atoi(optarg);
+	      	if (tmp >= 0 && tmp <= 5){
+	      		ETAPE = tmp;
+	      		printf("ETAPE = %d\n", ETAPE); //tmp
+	      	} else {
+	      		printf("Erreur d'argument : le nombre doit etre compris entre 0 et 5.\n");
+	      	}	
+	      } else {
+	      	printf("Erreur d'argument : un nombre compris entre 0 et 5 est attendu.\n");
+	      }
+	     
 	      break;
 	    case 't':
 	      flags += OPT_T;
 	      printf("option t\n");
-	      // comme s mais en vérifiant 0 <= optarg <= 5
-	      // chercher la meilleure manière de faire
-
-	      //NB_THREADS = NB_THREADS << atoi(optarg); (sauf si optarg = 0...)
+	      
+	      if(strlen(optarg) == 1 && isdigit(optarg[0])){
+	      	int tmp = atoi(optarg);
+	      	if (tmp >= 0 && tmp <= 5){
+	      		NB_THREADS = NB_THREADS << tmp;
+	      		NB_THREADS *= NB_THREADS;
+	      		printf("NB_THREADS = %d\n", NB_THREADS); //tmp
+	      	} else {
+	      		printf("Erreur d'argument : le nombre doit etre compris entre 0 et 5.\n");
+	      	}	
+	      } else {
+	      	printf("Erreur d'argument : un nombre compris entre 0 et 5 est attendu.\n");
+	      }
 	      break;
 	    case '?':
 	      printf("Case ?\n");
@@ -123,18 +141,18 @@ int main(int argc, char * argv[]){
 	checkOptions(argc, argv);
 	printf("startmain\n");
 	FILE* fichier = fopen("test.txt", "w+");
-	SIZE_GRID = 16;
+	TAILLE_GRILLE = 16;
 	NB_ITER = 10;
-	caseDansMat ** mat = creationMatrice(SIZE_GRID, TEMP_FROID);
+	caseDansMat ** mat = creationMatrice(TAILLE_GRILLE, TEMP_FROID);
 	printf("after create\n");
 	positionneCaseChauffante(mat, N, TEMP_CHAUD);
 	double coefCase = 16.0/36.0;
 	double coefHori = 4.0/36.0;
 	double coefDiag = 1.0/36.0;
 	for(int i = 0 ; i < NB_ITER ; ++i)
-		simulationIteration(mat, SIZE_GRID, coefCase, coefHori, coefDiag, TEMP_FROID);
-	afficheMatriceFile(mat, SIZE_GRID, fichier);
-	suppressionMatrice(mat, SIZE_GRID);
+		simulationIteration(mat, TAILLE_GRILLE, coefCase, coefHori, coefDiag, TEMP_FROID);
+	afficheMatriceFile(mat, TAILLE_GRILLE, fichier);
+	suppressionMatrice(mat, TAILLE_GRILLE);
 
 	if(flags & OPT_M){
 		end = clock();
