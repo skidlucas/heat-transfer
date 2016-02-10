@@ -41,7 +41,7 @@ void afficheMatriceStandard(caseDansMat ** mat, int taille){
 void afficheMatriceFile(caseDansMat ** mat, int taille, FILE * fic){
 	for(int i = 0 ; i < taille  ; ++i){
 		for(int j = 0 ; j < taille ; ++j){
-			fprintf(fic, "|%f|", round(mat[i][j].valN*100)/100);
+			fprintf(fic, "|%8.2f|", round(mat[i][j].valN*100)/100);
 		}
 		fprintf(fic,"\n");
 	}

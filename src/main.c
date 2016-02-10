@@ -24,14 +24,26 @@ extern int optind, opterr, optopt;
  
 #include <getopt.h>
 
+/* flags pour savoir les options activées */
+enum Flags {
+	OPT_S       = 0x01,
+	OPT_M       = 0x02,
+	OPT_BIGM    = 0x04,
+	OPT_A       = 0x08,
+	OPT_I       = 0x10,
+	OPT_E 	  	= 0x20,
+	OPT_T		= 0x30
+};
+
+int flags;
 int N = 4;
-int SIZE_GRID = 1;
+int SIZE_GRID = 16;
 int NB_ITER = 10000;
 int STEP = 0;
 int NB_THREADS = 4;
 clock_t start, end;
 double TEMP_FROID = 0.0;
-double TEMP_CHAUD = 36.0;
+double TEMP_CHAUD = 10000.0;
 
 int isNumber(char * s){
 	int i = 0;
@@ -48,6 +60,7 @@ void checkOptions(int argc, char * argv[]){
 	while ((c = getopt(argc , argv, "s:mMai:e:t:")) != -1){
 		switch (c) {
 	    case 's':
+	      flags += OPT_S;
 	      printf("option s\n");  //tmp
 	      if(strlen(optarg) == 1 && isdigit(optarg[0])){
 	      	N = atoi(optarg);
@@ -59,20 +72,19 @@ void checkOptions(int argc, char * argv[]){
 	      break;
 	    case 'm':
 	      printf("option m\n");
+	      flags += OPT_M;
 	      start = clock();
-	      /*quand le scénario est fini :
-			end = clock();
-			double total = (double) (end - start) / CLOCKS_PER_SEC;
-			printf("Temps total de consommation CPU: %f\n", total);
-			*/
 	      break;
 	    case 'M':
+	      flags += OPT_BIGM;
 	      printf("option M\n");
 	      break;
 	    case 'a':
+	      flags += OPT_A;
 	      printf("option a\n");
 	      break;
 	    case 'i':
+	      flags += OPT_I;
 	      printf("option i\n");
 	      if(atoi(optarg)){
 	      	NB_ITER = atoi(optarg);
@@ -82,6 +94,7 @@ void checkOptions(int argc, char * argv[]){
 	      }
 	      break;
 	    case 'e':
+	      flags += OPT_E;
 	      printf("option e\n");
 	      // comme s mais en vérifiant 0 <= optarg <= 5
 	      // chercher la meilleure manière de faire
@@ -89,6 +102,7 @@ void checkOptions(int argc, char * argv[]){
 	      //STEP = atoi(optarg);
 	      break;
 	    case 't':
+	      flags += OPT_T;
 	      printf("option t\n");
 	      // comme s mais en vérifiant 0 <= optarg <= 5
 	      // chercher la meilleure manière de faire
@@ -106,10 +120,11 @@ void checkOptions(int argc, char * argv[]){
 }
 
 int main(int argc, char * argv[]){
+	checkOptions(argc, argv);
 	printf("startmain\n");
 	FILE* fichier = fopen("test.txt", "w+");
 	SIZE_GRID = 16;
-	NB_ITER = 1;
+	NB_ITER = 10;
 	caseDansMat ** mat = creationMatrice(SIZE_GRID, TEMP_FROID);
 	printf("after create\n");
 	positionneCaseChauffante(mat, N, TEMP_CHAUD);
@@ -120,5 +135,12 @@ int main(int argc, char * argv[]){
 		simulationIteration(mat, SIZE_GRID, coefCase, coefHori, coefDiag, TEMP_FROID);
 	afficheMatriceFile(mat, SIZE_GRID, fichier);
 	suppressionMatrice(mat, SIZE_GRID);
+
+	if(flags & OPT_M){
+		end = clock();
+		double total = (double) (end - start) / CLOCKS_PER_SEC;
+		printf("Temps total de consommation CPU: %f\n", total);
+
+	}
 	return 0;
 } 
