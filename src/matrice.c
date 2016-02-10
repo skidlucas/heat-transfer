@@ -47,6 +47,16 @@ void afficheMatriceFile(caseDansMat ** mat, int taille, FILE * fic){
 	}
 }
 
+//Affiche le quart superieur de la matrice
+void afficheQuartMatrice(caseDansMat ** mat, int taille){
+	for(int i = 0 ; i < taille / 2 ; ++i){
+		for(int j = 0 ; j < taille / 2 ; ++j){
+			printf("|%.2f|", round(mat[i][j].valN*100)/100);
+		}
+		printf("\n");
+	}
+}
+
 //Affecte la valeur N+1 à la variable N
 //Reinitialise la valeur N+1
 void miseAJourMatrice(caseDansMat ** mat, int taille, double coefSurCase, double temp_froid){
