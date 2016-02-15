@@ -193,16 +193,12 @@ double calculMoyenne(double * tab){
 }
 
 int main(int argc, char * argv[]){
-	printf("startmain\n");
 	checkOptions(argc, argv);
 	double tempsExecute[NB_EXECUTION];
 	execute(tempsExecute);
-	//printf("\n%f\n", calculMoyenne(tempsExecute));
-	//FILE* fichier = fopen("test.txt", "w+");
-	if(flags & OPT_M){
+	/if(flags & OPT_M){
 		printf("Temps total de consommation CPU: %f\n", calculMoyenne(tempsExecute));
 
 	}
-	printf("endmain");
 	return 0;
 } 

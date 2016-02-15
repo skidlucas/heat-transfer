@@ -35,7 +35,7 @@ void simulationChaqueCase(caseDansMat ** mat, int taille, int i, int j, double c
 	   mat[i][j].valN == temp_froid)
 		return;
 	//On calcule la chaleur transmise aux voisins horizontaux et verticaux
-	double chaleurHoriVert = mat[i][j].valN * coefHori; // remplacer constante
+	double chaleurHoriVert = mat[i][j].valN * coefHori;
 	//affectation aux horizontaux verification pour pas sortir de la matrice
 	if(j - 1 >= 0)
 		mat[i][j - 1].valNPlus1 += chaleurHoriVert;
@@ -62,7 +62,7 @@ void simulationChaqueCase(caseDansMat ** mat, int taille, int i, int j, double c
 void simulationIteration(caseDansMat ** mat, int taille, double coefCase, double coefHori, double coefDiag, double temp_froid){
 	for(int i = 0 ; i < taille  ; ++i){
 		for(int j = 0 ; j < taille ; ++j){
-			simulationChaqueCase(mat, taille, i, j, coefHori, coefDiag, temp_froid);
+			simulateHori(mat, taille, i, j, coefHori, temp_froid);
 		}
 	}
 	miseAJourMatrice(mat, taille, coefCase, temp_froid);
