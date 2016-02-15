@@ -18,6 +18,9 @@ typedef struct {
 //creation d'une matrice carree de la taille passee en parametre 
 caseDansMat ** creationMatrice(int taille,  double temp_froid);
 
+//Initialise les cases dans le matrice
+void initMatrice(caseDansMat ** mat, int taille, double temp_froid);
+
 //affiche la matrice sur la sortie standard
 void afficheMatriceStandard(caseDansMat ** mat, int taille);
 

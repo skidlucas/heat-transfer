@@ -14,6 +14,8 @@
 #include <time.h>
 #include <stdlib.h>
 #include "heatTransfer.h"
+#include <sys/resource.h>
+
 
 /* Pour la compilation en -std=c11 */
 int getopt (int argc, char * const argv[],
@@ -43,7 +45,7 @@ int ETAPE = 0;
 int NB_THREADS = 1;
 clock_t start, end;
 double TEMP_FROID = 0.0;
-double TEMP_CHAUD = 10000.0;
+double TEMP_CHAUD = 36.0;
 int NB_EXECUTION = 1;
 
 //verifie que s est un chiffre
@@ -144,23 +146,25 @@ void checkOptions(int argc, char * argv[]){
 }
 
 //simulation d'un scénario / retourne un tableau des temps d'execution
-double * execute(double * tab){
-	double coefCase = 16.0/36.0;
+void execute(double * tab){
+	/*double coefCase = 16.0/36.0;
 	double coefHori = 4.0/36.0;
-	double coefDiag = 1.0/36.0;
+	double coefDiag = 1.0/36.0;*/
+	caseDansMat ** mat = creationMatrice(TAILLE_GRILLE, TEMP_FROID);
 	for(int i = 0 ; i < NB_EXECUTION ; ++i){
 		start = clock();
-		caseDansMat ** mat = creationMatrice(TAILLE_GRILLE, TEMP_FROID);
+		initMatrice(mat, TAILLE_GRILLE, TEMP_FROID);
 		positionneCaseChauffante(mat, N, TEMP_CHAUD);
-		for(int i = 0 ; i < NB_ITER ; ++i)
-			simulationIteration(mat, TAILLE_GRILLE, coefCase, coefHori, coefDiag, TEMP_FROID);
-		if(flags & OPT_A)
-			afficheQuartMatrice(mat, TAILLE_GRILLE);
-		suppressionMatrice(mat, TAILLE_GRILLE);	
+		for(int j = 0 ; j < NB_ITER ; ++j){
+			printf("execution %d | iteration %d \n", i, j);
+			simulationIteration(mat, TAILLE_GRILLE, N);
+		}
 		end = clock();
 		tab[i] = (double) (end - start) / CLOCKS_PER_SEC;
 	}
-	return tab;
+	if(flags & OPT_A)
+		afficheMatriceStandard(mat, TAILLE_GRILLE);//afficheQuartMatrice(mat, TAILLE_GRILLE);
+	suppressionMatrice(mat, TAILLE_GRILLE);	
 }
 
 //supprime les deux plus petites valeurs
@@ -184,6 +188,7 @@ void supprimeMins(double * tab){
 
 //calcule la moyenne des executions
 double calculMoyenne(double * tab){
+	supprimeMins(tab);
 	double total = 0;
 	if(NB_EXECUTION == 1 || NB_EXECUTION == 2)
 		return tab[0];
@@ -196,6 +201,8 @@ int main(int argc, char * argv[]){
 	checkOptions(argc, argv);
 	double tempsExecute[NB_EXECUTION];
 	execute(tempsExecute);
+	struct rusage usage;
+	getrusage(RUSAGE_SELF, &usage);
 	if(flags & OPT_M){
 		printf("Temps total de consommation CPU: %f\n", calculMoyenne(tempsExecute));
 

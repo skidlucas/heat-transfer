@@ -29,41 +29,70 @@ void positionneCaseChauffante(caseDansMat ** mat, int N, double temp_chaude){
 
 
 //propage la chaleur a toutes les cases autour de la case d'indice passe en parametre
-void simulationChaqueCase(caseDansMat ** mat, int taille, int i, int j, double coefHori, double coefDiag, double temp_froid){
-	if(i < 0 || i >= taille || 
-	   j < 0 || j >= taille ||
-	   mat[i][j].valN == temp_froid)
+void simulationChaqueCase(caseDansMat ** mat, int * taille, int * i, int * j, double * coefHori, double * coefDiag, double * temp_froid){
+	if(*i < 0 || *i >= *taille || 
+	   *j < 0 || *j >= *taille ||
+	   mat[*i][*j].valN == *temp_froid)
 		return;
 	//On calcule la chaleur transmise aux voisins horizontaux et verticaux
-	double chaleurHoriVert = mat[i][j].valN * coefHori;
+	double chaleurHoriVert = mat[*i][*j].valN * *(coefHori);
 	//affectation aux horizontaux verification pour pas sortir de la matrice
-	if(j - 1 >= 0)
-		mat[i][j - 1].valNPlus1 += chaleurHoriVert;
-	if(j + 1 < taille)
-		mat[i][j + 1].valNPlus1 += chaleurHoriVert;
+	if(*(j) - 1 >= 0)
+		mat[*i][*(j) - 1].valNPlus1 += chaleurHoriVert;
+	if(*(j) + 1 < *taille)
+		mat[*(i)][*(j) + 1].valNPlus1 += chaleurHoriVert;
 	//affectation aux verticaux
-	if(i - 1 >= 0)
-		mat[i - 1][j].valNPlus1 += chaleurHoriVert;
-	if(i + 1 < taille)		
-		mat[i + 1][j].valNPlus1 += chaleurHoriVert;
+	if(*(i) - 1 >= 0)
+		mat[*(i) - 1][*j].valNPlus1 += chaleurHoriVert;
+	if(*(i) + 1 < *taille)		
+		mat[*(i) + 1][*j].valNPlus1 += chaleurHoriVert;
 	//On calcule la chaleur transmise aux voisins diagonaux
-	double chaleurDiag = mat[i][j].valN * coefDiag;
-	if(j - 1 >= 0 && i - 1 >= 0)
-		mat[i - 1][j - 1].valNPlus1 += chaleurDiag;
-	if(j - 1 >= 0 && i + 1 < taille)
-		mat[i + 1][j - 1].valNPlus1 += chaleurDiag;
-	if(j + 1 < taille && i - 1 > 0)
-		mat[i - 1][j + 1].valNPlus1 += chaleurDiag;
-	if(j + 1 < taille && i + 1 < taille)
-		mat[i + 1][j + 1].valNPlus1 += chaleurDiag;  
+	double chaleurDiag = mat[*i][*j].valN * *(coefDiag);
+	if(*(j) - 1 >= 0 && *(i) - 1 >= 0)
+		mat[*(i) - 1][*(j) - 1].valNPlus1 += chaleurDiag;
+	if(*(j) - 1 >= 0 && *(i) + 1 < *taille)
+		mat[*(i) + 1][*(j) - 1].valNPlus1 += chaleurDiag;
+	if(*(j) + 1 < *taille && *(i) - 1 > 0)
+		mat[*(i) - 1][*(j) + 1].valNPlus1 += chaleurDiag;
+	if(*(j) + 1 < *taille && *(i) + 1 < *taille)
+		mat[*(i) + 1][*(j) + 1].valNPlus1 += chaleurDiag;  
+}
+
+
+void simulateHori(caseDansMat ** mat, int taille, int i, int j){
+	if(j == 0){
+		mat[i][j].valNPlus1 = (2 *(mat[i][j].valN / 3)) + (mat[i][j + 1].valN / 6);
+	} else if (j == taille - 1) {
+		mat[i][j].valNPlus1 = (2 *(mat[i][j].valN / 3)) + (mat[i][j - 1].valN / 6);
+	} else {
+		mat[i][j].valNPlus1 = (2 *(mat[i][j].valN / 3)) + (mat[i][j - 1].valN / 6) + (mat[i][j + 1].valN / 6);
+	}
+}
+
+void simulateVerti(caseDansMat ** mat, int taille, int i, int j){
+	if(i == 0){
+		mat[i][j].valN = (2 * (mat[i][j].valNPlus1 /3)) + (mat[i + 1][j].valNPlus1 / 6);
+	} else if (i == taille - 1) {
+		mat[i][j].valN = (2 * (mat[i][j].valNPlus1 /3)) + (mat[i - 1][j].valNPlus1 / 6);
+	} else {
+		mat[i][j].valN = (2 * (mat[i][j].valNPlus1 /3)) + (mat[i - 1][j].valNPlus1 / 6) + (mat[i + 1][j].valNPlus1 / 6);
+	}
 }
 
 //Simule une itération de propagation de chaleur
-void simulationIteration(caseDansMat ** mat, int taille, double coefCase, double coefHori, double coefDiag, double temp_froid){
+void simulationIteration(caseDansMat ** mat, int taille, int N){
 	for(int i = 0 ; i < taille  ; ++i){
 		for(int j = 0 ; j < taille ; ++j){
-			simulationChaqueCase(mat, taille, i, j, coefHori, coefDiag, temp_froid);
+			simulateHori(mat, taille, i, j);
+			
 		}
 	}
-	miseAJourMatrice(mat, taille, coefCase, temp_froid);
+	for(int i = 0 ; i < taille  ; ++i){
+		for(int j = 0 ; j < taille ; ++j){
+			simulateVerti(mat, taille, i, j);					
+		}
+	}
+	
+	//miseAJourMatrice(mat, *taille, *coefCase, *temp_froid);
+	positionneCaseChauffante(mat, N, 36.0);
 }

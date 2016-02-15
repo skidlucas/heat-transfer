@@ -12,11 +12,9 @@
 #include <stdlib.h>
 #include "matrice.h"
 
-//creation d'une matrice carree de la taille passee en parametre 
-caseDansMat ** creationMatrice(int taille, double temp_froid){
-	caseDansMat ** mat = (caseDansMat **)malloc(taille * sizeof(caseDansMat));
-	for(int i = 0 ; i < taille ; ++i)
-		mat[i] = (caseDansMat *)malloc(taille  * sizeof(caseDansMat));
+
+//Initialise les cases dans le matrice
+void initMatrice(caseDansMat ** mat, int taille, double temp_froid){
 	for(int i = 0 ; i < taille ; ++i){
 		for(int j = 0 ; j < taille  ; ++j){
 			mat[i][j].valN = temp_froid;
@@ -24,6 +22,13 @@ caseDansMat ** creationMatrice(int taille, double temp_froid){
 			mat[i][j].estChauffante = 0;
 		}
 	}
+}
+
+//creation d'une matrice carree de la taille passee en parametre 
+caseDansMat ** creationMatrice(int taille, double temp_froid){
+	caseDansMat ** mat = (caseDansMat **)malloc(taille * sizeof(caseDansMat));
+	for(int i = 0 ; i < taille ; ++i)
+		mat[i] = (caseDansMat *)malloc(taille  * sizeof(caseDansMat));
 	return mat;
 }
 

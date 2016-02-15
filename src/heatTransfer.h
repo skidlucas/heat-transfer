@@ -11,4 +11,4 @@
 void positionneCaseChauffante(caseDansMat ** mat, int N, double temp_chaude);
 
 //Simule une itération de propagation de chaleur
-void simulationIteration(caseDansMat ** mat, int taille, double coefCase, double coefHori, double coefDiag, double temp_froid);
+void simulationIteration(caseDansMat ** mat, int taille, int N);
