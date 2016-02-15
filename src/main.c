@@ -37,14 +37,16 @@ enum Flags {
 
 int flags;
 int N = 4;
-int TAILLE_GRILLE = 1;
+int TAILLE_GRILLE = 16;
 int NB_ITER = 10000;
 int ETAPE = 0;
 int NB_THREADS = 1;
 clock_t start, end;
 double TEMP_FROID = 0.0;
 double TEMP_CHAUD = 10000.0;
+int NB_EXECUTION = 1;
 
+//verifie que s est un chiffre
 int isNumber(char * s){
 	int i = 0;
     while (s[i]){
@@ -55,6 +57,7 @@ int isNumber(char * s){
     return 1;
 }
 
+//recuperation des arguments
 void checkOptions(int argc, char * argv[]){
 	int c;
 	while ((c = getopt(argc , argv, "s:mMai:e:t:")) != -1){
@@ -63,9 +66,11 @@ void checkOptions(int argc, char * argv[]){
 	      flags += OPT_S;
 	      printf("option s\n");  //tmp
 	      if(strlen(optarg) == 1 && isdigit(optarg[0])){
-	      	//N = atoi(optarg); c'est quoi ce N ?
-	      	TAILLE_GRILLE = TAILLE_GRILLE << (atoi(optarg) + 4);
-	      	printf("TAILLE_GRILLE = %d\n", TAILLE_GRILLE); //tmp
+	      	N = atoi(optarg) + 4;
+	      	TAILLE_GRILLE = 1 << N;
+	      	//N = atoi(optarg);
+	      	//TAILLE_GRILLE = TAILLE_GRILLE << (atoi(optarg) + 4);
+	      	printf("TAILLE_GRILLE = %d\n", TAILLE_GRILLE);
 	      } else {
 	      	printf("Argument error : a number (0 <= x <= 9) was expected.\n");
 	      }
@@ -73,7 +78,8 @@ void checkOptions(int argc, char * argv[]){
 	    case 'm':
 	      printf("option m\n");
 	      flags += OPT_M;
-	      start = clock();
+	      NB_EXECUTION = 10;
+	      //start = clock();
 	      break;
 	    case 'M':
 	      flags += OPT_BIGM;
@@ -137,28 +143,66 @@ void checkOptions(int argc, char * argv[]){
 	}
 }
 
-int main(int argc, char * argv[]){
-	checkOptions(argc, argv);
-	printf("startmain\n");
-	FILE* fichier = fopen("test.txt", "w+");
-	TAILLE_GRILLE = 16;
-	NB_ITER = 10;
-	caseDansMat ** mat = creationMatrice(TAILLE_GRILLE, TEMP_FROID);
-	printf("after create\n");
-	positionneCaseChauffante(mat, N, TEMP_CHAUD);
+//simulation d'un scénario / retourne un tableau des temps d'execution
+double * execute(double * tab){
 	double coefCase = 16.0/36.0;
 	double coefHori = 4.0/36.0;
 	double coefDiag = 1.0/36.0;
-	for(int i = 0 ; i < NB_ITER ; ++i)
-		simulationIteration(mat, TAILLE_GRILLE, coefCase, coefHori, coefDiag, TEMP_FROID);
-	afficheMatriceFile(mat, TAILLE_GRILLE, fichier);
-	suppressionMatrice(mat, TAILLE_GRILLE);
-
-	if(flags & OPT_M){
+	for(int i = 0 ; i < NB_EXECUTION ; ++i){
+		start = clock();
+		caseDansMat ** mat = creationMatrice(TAILLE_GRILLE, TEMP_FROID);
+		positionneCaseChauffante(mat, N, TEMP_CHAUD);
+		for(int i = 0 ; i < NB_ITER ; ++i)
+			simulationIteration(mat, TAILLE_GRILLE, coefCase, coefHori, coefDiag, TEMP_FROID);
+		if(flags & OPT_A)
+			afficheQuartMatrice(mat, TAILLE_GRILLE);
+		suppressionMatrice(mat, TAILLE_GRILLE);	
 		end = clock();
-		double total = (double) (end - start) / CLOCKS_PER_SEC;
-		printf("Temps total de consommation CPU: %f\n", total);
+		tab[i] = (double) (end - start) / CLOCKS_PER_SEC;
+	}
+	return tab;
+}
+
+//supprime les deux plus petites valeurs
+void supprimeMins(double * tab){
+	double valMin = tab[0];
+	int indMin = 0;
+	double valMax = tab[0];
+	int indMax = 0;
+	for(int i = 1 ; i < NB_EXECUTION ; ++i) {
+		if(tab[i] < valMin) {
+			valMin = tab[i];
+			indMin = i;
+		}
+		if(tab[i] > valMax){
+			valMax = tab[i];
+			indMax = i;
+		}
+	}
+	tab[indMax] = tab[indMin] = 0.0;
+}
+
+//calcule la moyenne des executions
+double calculMoyenne(double * tab){
+	double total = 0;
+	if(NB_EXECUTION == 1 || NB_EXECUTION == 2)
+		return tab[0];
+	for(int i = 0 ; i < NB_EXECUTION ; ++i)
+		total += tab[i];
+	return total / (NB_EXECUTION - 2);
+}
+
+int main(int argc, char * argv[]){
+	printf("startmain\n");
+	checkOptions(argc, argv);
+	double tempsExecute[NB_EXECUTION];
+	execute(tempsExecute);
+	//printf("\n%f\n", calculMoyenne(tempsExecute));
+	//FILE* fichier = fopen("test.txt", "w+");
+	if(flags & OPT_M){
+		printf("Temps total de consommation CPU: %f\n", calculMoyenne(tempsExecute));
 
 	}
+	printf("endmain");
 	return 0;
 } 
