@@ -196,7 +196,7 @@ int main(int argc, char * argv[]){
 	checkOptions(argc, argv);
 	double tempsExecute[NB_EXECUTION];
 	execute(tempsExecute);
-	/if(flags & OPT_M){
+	if(flags & OPT_M){
 		printf("Temps total de consommation CPU: %f\n", calculMoyenne(tempsExecute));
 
 	}

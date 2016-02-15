@@ -62,7 +62,7 @@ void simulationChaqueCase(caseDansMat ** mat, int taille, int i, int j, double c
 void simulationIteration(caseDansMat ** mat, int taille, double coefCase, double coefHori, double coefDiag, double temp_froid){
 	for(int i = 0 ; i < taille  ; ++i){
 		for(int j = 0 ; j < taille ; ++j){
-			simulateHori(mat, taille, i, j, coefHori, temp_froid);
+			simulationChaqueCase(mat, taille, i, j, coefHori, coefDiag, temp_froid);
 		}
 	}
 	miseAJourMatrice(mat, taille, coefCase, temp_froid);
