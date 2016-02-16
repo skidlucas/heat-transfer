@@ -14,21 +14,23 @@
 
 
 //Initialise les cases dans le matrice
-void initMatrice(caseDansMat * mat, int taille, double temp_froid){
-	/*for(int i = 0 ; i < taille ; ++i){
-		for(int j = 0 ; j < taille  ; ++j){
-			mat[i][j].valN = temp_froid;
-			mat[i][j].valNPlus1 = temp_froid;
-			mat[i][j].estChauffante = 0;
+void initMatrice(caseDansMat * mat, int taille, int N, double temp_froid, double temp_chaud){
+	int minInd = (1 << (N - 1)) - (1 << (N - 4));
+	int maxInd = (1 << (N - 1)) + (1 << (N - 4));
+	for(int i = 0 ; i < taille ; ++i){
+		for(int j = 0 ; j < taille ; ++j){
+			caseDansMat * caseMat = mat + i * taille + j;
+			if(i >= minInd && i < maxInd && j >= minInd && j < maxInd){
+				caseMat->valeur = temp_chaud;
+				caseMat->valeurTmp = temp_chaud;
+				caseMat->estChauffante = 1;	
+			} else {		
+				caseMat->valeur = temp_froid;
+				caseMat->valeurTmp = temp_froid;
+				caseMat->estChauffante = 0;	
+			}
+			
 		}
-	}*/
-	int d = 0;
-	int tailleMax = taille * taille;
-	while(d < tailleMax){
-		mat[d].valN = temp_froid;
-		mat[d].valNPlus1 = temp_froid;
-		mat[d].estChauffante = 0;
-		d++;	
 	}
 }
 
@@ -50,7 +52,7 @@ void afficheMatriceStandard(caseDansMat * mat, int taille){
 	int d = 0;
 	int tailleMax = taille * taille;
 	while(d < tailleMax){	
-		printf("|%.2f|", round(mat[d].valN*100)/100);
+		printf("|%.2f|", round(mat[d].valeur*100)/100);
 		if(d++ != 0 && d % taille == 0)
 			printf("\n");
 	}
@@ -60,7 +62,7 @@ void afficheMatriceStandard(caseDansMat * mat, int taille){
 void afficheMatriceFile(caseDansMat ** mat, int taille, FILE * fic){
 	for(int i = 0 ; i < taille  ; ++i){
 		for(int j = 0 ; j < taille ; ++j){
-			fprintf(fic, "|%d|", (int)mat[i][j].valN );//round(mat[i][j].valN*100)/100);
+			fprintf(fic, "|%d|", (int)mat[i][j].valeur );//round(mat[i][j].valN*100)/100);
 		}
 		fprintf(fic,"\n");
 	}
@@ -74,7 +76,7 @@ void afficheQuartMatrice(caseDansMat * mat, int taille){
 	int i = 0, j = 0, cpt = 1;
 	for(int d = 0; d < tailleMax / (taille / 4); ++cpt){ 
 		for(; i < taille / 2; j += pas){
-			printf("|%d:%.2f|", j, round(mat[j].valN*100)/100);
+			printf("|%d:%.2f|", j, round(mat[j].valeur*100)/100);
 			i += pas;
 			++d;
 		}
@@ -90,10 +92,10 @@ void miseAJourMatrice(caseDansMat ** mat, int taille, double coefSurCase, double
 	for(int i = 0 ; i < taille  ; ++i){
 		for(int j = 0 ; j < taille ; ++j){
 			if(! mat[i][j].estChauffante){
-				mat[i][j].valN = mat[i][j].valN * coefSurCase + mat[i][j].valNPlus1;
-				mat[i][j].valNPlus1 = temp_froid;
+				mat[i][j].valeur = mat[i][j].valeur * coefSurCase + mat[i][j].valeurTmp;
+				mat[i][j].valeurTmp = temp_froid;
 			} else {
-				mat[i][j].valNPlus1 = mat[i][j].valN;
+				mat[i][j].valeurTmp = mat[i][j].valeur;
 			}
 		}
 	}

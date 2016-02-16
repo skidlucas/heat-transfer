@@ -45,7 +45,7 @@ int ETAPE = 0;
 int NB_THREADS = 1;
 clock_t start, end;
 double TEMP_FROID = 0.0;
-double TEMP_CHAUD = 10000000.0;
+double TEMP_CHAUD = 36.0;
 int NB_EXECUTION = 1;
 
 //verifie que s est un chiffre
@@ -151,8 +151,8 @@ void execute(double * tab){
 	caseDansMat * mat = creationMatrice(TAILLE_GRILLE, TEMP_FROID);
 	for(int i = 0 ; i < NB_EXECUTION ; ++i){
 		start = clock();
-		initMatrice(mat, TAILLE_GRILLE, TEMP_FROID);
-		positionneCaseChauffante(mat, TAILLE_GRILLE, N, TEMP_CHAUD);
+		initMatrice(mat, TAILLE_GRILLE, N, TEMP_FROID, TEMP_CHAUD);
+		//positionneCaseChauffante(mat, TAILLE_GRILLE, N, TEMP_CHAUD);
 		for(int j = 0 ; j < NB_ITER ; ++j){
 			simulationIteration(TAILLE_GRILLE, N, mat);
 		}
@@ -160,7 +160,7 @@ void execute(double * tab){
 		tab[i] = (double) (end - start) / CLOCKS_PER_SEC;
 	}
 	if(flags & OPT_A)
-		afficheQuartMatrice(mat, TAILLE_GRILLE);//afficheMatriceStandard(mat, TAILLE_GRILLE);
+		/*afficheQuartMatrice(mat, TAILLE_GRILLE);*/afficheMatriceStandard(mat, TAILLE_GRILLE);
 	suppressionMatrice(mat, TAILLE_GRILLE);	
 }
 
@@ -198,13 +198,7 @@ int main(int argc, char * argv[]){
 	checkOptions(argc, argv);
 	double tempsExecute[NB_EXECUTION];
 	execute(tempsExecute);
-	struct rusage ru;
-		getrusage(RUSAGE_SELF, &ru);
-    	long maxrss = ru.ru_maxrss;
- 		printf("RUSAGE :ru_maxrss => %ld [kilobytes], %ld [struct Cell], %ld [nb Cell]\n", maxrss, maxrss / sizeof(caseDansMat) * 1024, (2 + (1 << (TAILLE_GRILLE + 4))) * (2 + (1 << (TAILLE_GRILLE + 4))));
-	if(flags & OPT_M){
+	if(flags & OPT_M)
 		printf("Temps total de consommation CPU: %f\n", calculMoyenne(tempsExecute));
-
-	}
 	return 0;
 } 

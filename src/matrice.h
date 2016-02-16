@@ -10,8 +10,8 @@
 
 /* struct qui represente une case de la plaque */
 typedef struct {
-	double valN;
-	double valNPlus1;
+	double valeur;
+	double valeurTmp;
 	int estChauffante;
 } caseDansMat;
 
@@ -19,7 +19,7 @@ typedef struct {
 caseDansMat * creationMatrice(int taille,  double temp_froid);
 
 //Initialise les cases dans le matrice
-void initMatrice(caseDansMat * mat, int taille, double temp_froid);
+void initMatrice(caseDansMat * mat, int taille, int N, double temp_froid, double temp_chaud);
 
 //affiche la matrice sur la sortie standard
 void afficheMatriceStandard(caseDansMat * mat, int taille);
