@@ -28,7 +28,7 @@ void afficheMatriceStandard(caseDansMat * mat, int taille);
 void afficheMatriceFile(caseDansMat ** mat, int taille, FILE * fic);
 
 //Affiche le quart superieur de la matrice
-void afficheQuartMatrice(caseDansMat ** mat, int taille);
+void afficheQuartMatrice(caseDansMat * mat, int taille);
 
 //Affecte la valeur N+1 à la variable N
 //Reinitialise la valeur N+1

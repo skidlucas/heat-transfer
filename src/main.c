@@ -160,7 +160,7 @@ void execute(double * tab){
 		tab[i] = (double) (end - start) / CLOCKS_PER_SEC;
 	}
 	if(flags & OPT_A)
-		afficheMatriceStandard(mat, TAILLE_GRILLE);//afficheQuartMatrice(mat, TAILLE_GRILLE);
+		afficheQuartMatrice(mat, TAILLE_GRILLE);//afficheMatriceStandard(mat, TAILLE_GRILLE);
 	suppressionMatrice(mat, TAILLE_GRILLE);	
 }
 

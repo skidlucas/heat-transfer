@@ -67,12 +67,20 @@ void afficheMatriceFile(caseDansMat ** mat, int taille, FILE * fic){
 }
 
 //Affiche le quart superieur de la matrice
-void afficheQuartMatrice(caseDansMat ** mat, int taille){
-	for(int i = 0 ; i < taille / 2 ; ++i){
-		for(int j = 0 ; j < taille / 2 ; ++j){
-			printf("|%.2f|", round(mat[i][j].valN*100)/100);
+void afficheQuartMatrice(caseDansMat * mat, int taille){
+	int pas = taille / 16; //on affiche une valeur tous les 2^s indices, soit tous les taille/16 indices
+	
+	int tailleMax = taille * taille;
+	int i = 0, j = 0, cpt = 1;
+	for(int d = 0; d < tailleMax / (taille / 4); ++cpt){ 
+		for(; i < taille / 2; j += pas){
+			printf("|%d:%.2f|", j, round(mat[j].valN*100)/100);
+			i += pas;
+			++d;
 		}
 		printf("\n");
+		i = 0; // on remet à 0 pour l'itération suivante
+		j = cpt * taille; //parcours d'indice, permet d'aller à la ligne suivante
 	}
 }
 
