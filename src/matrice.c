@@ -14,31 +14,45 @@
 
 
 //Initialise les cases dans le matrice
-void initMatrice(caseDansMat ** mat, int taille, double temp_froid){
-	for(int i = 0 ; i < taille ; ++i){
+void initMatrice(caseDansMat * mat, int taille, double temp_froid){
+	/*for(int i = 0 ; i < taille ; ++i){
 		for(int j = 0 ; j < taille  ; ++j){
 			mat[i][j].valN = temp_froid;
 			mat[i][j].valNPlus1 = temp_froid;
 			mat[i][j].estChauffante = 0;
 		}
+	}*/
+	int d = 0;
+	int tailleMax = taille * taille;
+	while(d < tailleMax){
+		mat[d].valN = temp_froid;
+		mat[d].valNPlus1 = temp_froid;
+		mat[d].estChauffante = 0;
+		d++;	
 	}
 }
 
 //creation d'une matrice carree de la taille passee en parametre 
-caseDansMat ** creationMatrice(int taille, double temp_froid){
-	caseDansMat ** mat = (caseDansMat **)malloc(taille * sizeof(caseDansMat));
-	for(int i = 0 ; i < taille ; ++i)
-		mat[i] = (caseDansMat *)malloc(taille  * sizeof(caseDansMat));
+caseDansMat * creationMatrice(int taille, double temp_froid){
+	caseDansMat * mat = malloc( taille * taille * sizeof(caseDansMat));
 	return mat;
 }
 
 //affiche la matrice sur la sortie standard
-void afficheMatriceStandard(caseDansMat ** mat, int taille){
-	for(int i = 0 ; i < taille ; ++i){
+void afficheMatriceStandard(caseDansMat * mat, int taille){
+	/*for(int i = 0 ; i < taille ; ++i){
 		for(int j = 0 ; j < taille ; ++j){
-			printf("|%f|", round(mat[i][j].valN*100)/100);
+			caseDansMat * tmp = mat + i * taille + j;
+			printf("|%.2f|", tmp->valN);
 		}
 		printf("\n");
+	}*/
+	int d = 0;
+	int tailleMax = taille * taille;
+	while(d < tailleMax){	
+		printf("|%.2f|", round(mat[d].valN*100)/100);
+		if(d++ != 0 && d % taille == 0)
+			printf("\n");
 	}
 }
 
@@ -78,8 +92,8 @@ void miseAJourMatrice(caseDansMat ** mat, int taille, double coefSurCase, double
 }
 
 //Supprime la matrice en paramètre
-void suppressionMatrice(caseDansMat ** mat, int taille){
-	for(int i = 0 ; i < taille ; ++i)
-		free(mat[i]);
+void suppressionMatrice(caseDansMat * mat, int taille){
+	/*for(int i = 0 ; i < taille ; ++i)
+		free(mat[i]);*/
 	free(mat);
 }

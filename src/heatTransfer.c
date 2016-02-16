@@ -15,14 +15,15 @@
 #include "heatTransfer.h"
 
 //Positionne les cases centrales comme les cases chauffantes en fonction de la taille de la matrice
-void positionneCaseChauffante(caseDansMat ** mat, int N, double temp_chaude){
+void positionneCaseChauffante(caseDansMat * mat, int taille, int N, double temp_chaude){
 	int minInd = (1 << (N - 1)) - (1 << (N - 4));
 	int maxInd = (1 << (N - 1)) + (1 << (N - 4));
 	for(int i = minInd ; i < maxInd ; ++i){
 		for(int j = minInd ; j < maxInd ; ++j){
-			mat[i][j].valN = temp_chaude;
-			mat[i][j].valNPlus1 = temp_chaude;
-			mat[i][j].estChauffante = 1;
+			caseDansMat * caseMat = mat + i * taille + j;
+			caseMat->valN = temp_chaude;
+			caseMat->valNPlus1 = temp_chaude;
+			caseMat->estChauffante = 1;
 		}
 	}
 }
@@ -59,40 +60,70 @@ void simulationChaqueCase(caseDansMat ** mat, int * taille, int * i, int * j, do
 }
 
 
-void simulateHori(caseDansMat ** mat, int taille, int i, int j){
-	if(j == 0){
-		mat[i][j].valNPlus1 = (2 *(mat[i][j].valN / 3)) + (mat[i][j + 1].valN / 6);
-	} else if (j == taille - 1) {
-		mat[i][j].valNPlus1 = (2 *(mat[i][j].valN / 3)) + (mat[i][j - 1].valN / 6);
-	} else {
-		mat[i][j].valNPlus1 = (2 *(mat[i][j].valN / 3)) + (mat[i][j - 1].valN / 6) + (mat[i][j + 1].valN / 6);
-	}
-}
-
-void simulateVerti(caseDansMat ** mat, int taille, int i, int j){
-	if(i == 0){
-		mat[i][j].valN = (2 * (mat[i][j].valNPlus1 /3)) + (mat[i + 1][j].valNPlus1 / 6);
-	} else if (i == taille - 1) {
-		mat[i][j].valN = (2 * (mat[i][j].valNPlus1 /3)) + (mat[i - 1][j].valNPlus1 / 6);
-	} else {
-		mat[i][j].valN = (2 * (mat[i][j].valNPlus1 /3)) + (mat[i - 1][j].valNPlus1 / 6) + (mat[i + 1][j].valNPlus1 / 6);
-	}
-}
-
-//Simule une itération de propagation de chaleur
-void simulationIteration(caseDansMat ** mat, int taille, int N){
+void simulateHori(caseDansMat * mat, int taille){
+	caseDansMat * caseMat;
+	caseDansMat * caseMatGauche;
+	caseDansMat * caseMatDroite; 
 	for(int i = 0 ; i < taille  ; ++i){
 		for(int j = 0 ; j < taille ; ++j){
-			simulateHori(mat, taille, i, j);
+			caseMat = mat + i * taille + j;
+			caseMatGauche = mat + i * taille + (j - 1);
+			caseMatDroite = mat + i * taille + (j + 1); 
+			if(j == 0)
+				caseMat->valNPlus1 = 2 * (caseMat->valN / 3) + caseMatDroite->valN / 6;
+			else if (j == taille - 1) 
+				caseMat->valNPlus1 = 2 * (caseMat->valN / 3) + caseMatGauche->valN / 6;
+			else 
+				caseMat->valNPlus1 = 2 * (caseMat->valN / 3) + caseMatDroite->valN / 6 + caseMatGauche->valN / 6;
 			
 		}
 	}
+}
+
+void simulateVerti(caseDansMat * mat, int taille){
+	caseDansMat * caseMat;
+	caseDansMat * caseMatHaut;
+	caseDansMat * caseMatBas;
 	for(int i = 0 ; i < taille  ; ++i){
+		for(int j = 0 ; j < taille ; ++j){
+			caseMat = mat + i * taille + j;
+			//si la case est chauffante on fait pas la mise a jour de sa valeur
+			if(caseMat->estChauffante == 1) continue;
+			caseMatHaut = mat + (i - 1) * taille + j;
+			caseMatBas = mat + (i + 1) * taille + j; 
+			if(i == 0)
+				caseMat->valN = 2 * (caseMat->valNPlus1 / 3) + caseMatBas->valNPlus1  / 6;
+			else if (i == taille - 1) 
+				caseMat->valN = 2 * (caseMat->valNPlus1 / 3) + caseMatHaut->valNPlus1 / 6;
+			else 
+				caseMat->valN = 2 * (caseMat->valNPlus1 / 3) + caseMatBas->valNPlus1 / 6 + caseMatHaut->valNPlus1 / 6;
+			
+		}
+	}
+// 	/*if(i == 0){
+// 		mat[i][j].valN = (2 * (mat[i][j].valNPlus1 /3)) + (mat[i + 1][j].valNPlus1 / 6);
+// 	} else if (i == taille - 1) {
+// 		mat[i][j].valN = (2 * (mat[i][j].valNPlus1 /3)) + (mat[i - 1][j].valNPlus1 / 6);
+// 	} else {
+// 		mat[i][j].valN = (2 * (mat[i][j].valNPlus1 /3)) + (mat[i - 1][j].valNPlus1 / 6) + (mat[i + 1][j].valNPlus1 / 6);
+// 	}*/
+}
+
+//Simule une itération de propagation de chaleur
+void simulationIteration(int taille, int N, caseDansMat * mat){
+	/*for(int i = 0 ; i < taille  ; ++i){
+		for(int j = 0 ; j < taille ; ++j){
+			simulateHori(mat, taille, i, j);		
+		}
+	}*/
+		simulateHori(mat, taille);
+		simulateVerti(mat, taille);
+	/*for(int i = 0 ; i < taille  ; ++i){
 		for(int j = 0 ; j < taille ; ++j){
 			simulateVerti(mat, taille, i, j);					
 		}
-	}
+	}*/
 	
 	//miseAJourMatrice(mat, *taille, *coefCase, *temp_froid);
-	positionneCaseChauffante(mat, N, 36.0);
+	//positionneCaseChauffante(mat, taille, N, 36.0);
 }

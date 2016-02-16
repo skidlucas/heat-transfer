@@ -45,7 +45,7 @@ int ETAPE = 0;
 int NB_THREADS = 1;
 clock_t start, end;
 double TEMP_FROID = 0.0;
-double TEMP_CHAUD = 36.0;
+double TEMP_CHAUD = 10000000.0;
 int NB_EXECUTION = 1;
 
 //verifie que s est un chiffre
@@ -145,19 +145,16 @@ void checkOptions(int argc, char * argv[]){
 	}
 }
 
+
 //simulation d'un scénario / retourne un tableau des temps d'execution
 void execute(double * tab){
-	/*double coefCase = 16.0/36.0;
-	double coefHori = 4.0/36.0;
-	double coefDiag = 1.0/36.0;*/
-	caseDansMat ** mat = creationMatrice(TAILLE_GRILLE, TEMP_FROID);
+	caseDansMat * mat = creationMatrice(TAILLE_GRILLE, TEMP_FROID);
 	for(int i = 0 ; i < NB_EXECUTION ; ++i){
 		start = clock();
 		initMatrice(mat, TAILLE_GRILLE, TEMP_FROID);
-		positionneCaseChauffante(mat, N, TEMP_CHAUD);
+		positionneCaseChauffante(mat, TAILLE_GRILLE, N, TEMP_CHAUD);
 		for(int j = 0 ; j < NB_ITER ; ++j){
-			printf("execution %d | iteration %d \n", i, j);
-			simulationIteration(mat, TAILLE_GRILLE, N);
+			simulationIteration(TAILLE_GRILLE, N, mat);
 		}
 		end = clock();
 		tab[i] = (double) (end - start) / CLOCKS_PER_SEC;
@@ -201,8 +198,10 @@ int main(int argc, char * argv[]){
 	checkOptions(argc, argv);
 	double tempsExecute[NB_EXECUTION];
 	execute(tempsExecute);
-	struct rusage usage;
-	getrusage(RUSAGE_SELF, &usage);
+	struct rusage ru;
+		getrusage(RUSAGE_SELF, &ru);
+    	long maxrss = ru.ru_maxrss;
+ 		printf("RUSAGE :ru_maxrss => %ld [kilobytes], %ld [struct Cell], %ld [nb Cell]\n", maxrss, maxrss / sizeof(caseDansMat) * 1024, (2 + (1 << (TAILLE_GRILLE + 4))) * (2 + (1 << (TAILLE_GRILLE + 4))));
 	if(flags & OPT_M){
 		printf("Temps total de consommation CPU: %f\n", calculMoyenne(tempsExecute));
 

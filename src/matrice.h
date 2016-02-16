@@ -16,13 +16,13 @@ typedef struct {
 } caseDansMat;
 
 //creation d'une matrice carree de la taille passee en parametre 
-caseDansMat ** creationMatrice(int taille,  double temp_froid);
+caseDansMat * creationMatrice(int taille,  double temp_froid);
 
 //Initialise les cases dans le matrice
-void initMatrice(caseDansMat ** mat, int taille, double temp_froid);
+void initMatrice(caseDansMat * mat, int taille, double temp_froid);
 
 //affiche la matrice sur la sortie standard
-void afficheMatriceStandard(caseDansMat ** mat, int taille);
+void afficheMatriceStandard(caseDansMat * mat, int taille);
 
 //ecrit la matrice dans le fichier passe en parametre
 void afficheMatriceFile(caseDansMat ** mat, int taille, FILE * fic);
@@ -35,4 +35,4 @@ void afficheQuartMatrice(caseDansMat ** mat, int taille);
 void miseAJourMatrice(caseDansMat ** mat, int taille, double coefSurCase, double temp_froid);
 
 //Supprime la matrice en parametre
-void suppressionMatrice(caseDansMat ** mat, int taille);
+void suppressionMatrice(caseDansMat * mat, int taille);
