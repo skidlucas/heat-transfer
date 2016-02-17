@@ -70,8 +70,6 @@ void checkOptions(int argc, char * argv[]){
 	      if(strlen(optarg) == 1 && isdigit(optarg[0])){
 	      	N = atoi(optarg) + 4;
 	      	TAILLE_GRILLE = 1 << N;
-	      	//N = atoi(optarg);
-	      	//TAILLE_GRILLE = TAILLE_GRILLE << (atoi(optarg) + 4);
 	      	printf("TAILLE_GRILLE = %d\n", TAILLE_GRILLE);
 	      } else {
 	      	printf("Argument error : a number (0 <= x <= 9) was expected.\n");
@@ -160,7 +158,7 @@ void execute(double * tab){
 		tab[i] = (double) (end - start) / CLOCKS_PER_SEC;
 	}
 	if(flags & OPT_A)
-		/*afficheQuartMatrice(mat, TAILLE_GRILLE);*/afficheMatriceStandard(mat, TAILLE_GRILLE);
+		afficheQuartMatrice(mat, TAILLE_GRILLE);//afficheMatriceStandard(mat, TAILLE_GRILLE);
 	suppressionMatrice(mat, TAILLE_GRILLE);	
 }
 

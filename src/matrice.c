@@ -74,7 +74,7 @@ void afficheQuartMatrice(caseDansMat * mat, int taille){
 	
 	int tailleMax = taille * taille;
 	int i = 0, j = 0, cpt = 1;
-	for(int d = 0; d < tailleMax / (taille / 4); ++cpt){ 
+	for(int d = 0; d < 64; ++cpt){ 
 		for(; i < taille / 2; j += pas){
 			printf("|%d:%.2f|", j, round(mat[j].valeur*100)/100);
 			i += pas;
@@ -82,7 +82,7 @@ void afficheQuartMatrice(caseDansMat * mat, int taille){
 		}
 		printf("\n");
 		i = 0; // on remet à 0 pour l'itération suivante
-		j = cpt * taille; //parcours d'indice, permet d'aller à la ligne suivante
+		j = cpt * taille * pas; //parcours d'indice, permet d'aller à la ligne suivante
 	}
 }
 
