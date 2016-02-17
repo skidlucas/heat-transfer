@@ -17,9 +17,10 @@
 void initMatrice(caseDansMat * mat, int taille, int N, double temp_froid, double temp_chaud){
 	int minInd = (1 << (N - 1)) - (1 << (N - 4));
 	int maxInd = (1 << (N - 1)) + (1 << (N - 4));
+	caseDansMat * caseMat;
 	for(int i = 0 ; i < taille ; ++i){
 		for(int j = 0 ; j < taille ; ++j){
-			caseDansMat * caseMat = mat + i * taille + j;
+			caseMat = mat + i * taille + j;
 			if(i >= minInd && i < maxInd && j >= minInd && j < maxInd){
 				caseMat->valeur = temp_chaud;
 				caseMat->valeurTmp = temp_chaud;
@@ -72,17 +73,26 @@ void afficheMatriceFile(caseDansMat ** mat, int taille, FILE * fic){
 void afficheQuartMatrice(caseDansMat * mat, int taille){
 	int pas = taille / 16; //on affiche une valeur tous les 2^s indices, soit tous les taille/16 indices
 	
-	int tailleMax = taille * taille;
-	int i = 0, j = 0, cpt = 1;
-	for(int d = 0; d < 64; ++cpt){ 
-		for(; i < taille / 2; j += pas){
-			printf("|%d:%.2f|", j, round(mat[j].valeur*100)/100);
-			i += pas;
-			++d;
+	// int tailleMax = taille * taille;
+	// int i = 0, j = 0, cpt = 1;
+	// for(int d = 0; d < 64; ++cpt){ 
+	// 	for(; i < taille / 2; j += pas){
+	// 		printf("|%d:%.2f|", j, round(mat[j].valeur*100)/100);
+	// 		i += pas;
+	// 		++d;
+	// 	}
+	// 	printf("\n");
+	// 	i = 0; // on remet à 0 pour l'itération suivante
+	// 	j = cpt * taille * pas; //parcours d'indice, permet d'aller à la ligne suivante
+	// }
+	int indMil = taille / 2;
+	caseDansMat * caseMat;
+	for(int i = 0 ; i < indMil ; i += pas){
+		for(int j = 0 ; j < indMil ; j += pas){
+			caseMat = mat + i * taille + j;
+			printf("|%d:%.2f|", j, round(caseMat->valeur*100)/100);
 		}
 		printf("\n");
-		i = 0; // on remet à 0 pour l'itération suivante
-		j = cpt * taille * pas; //parcours d'indice, permet d'aller à la ligne suivante
 	}
 }
 
