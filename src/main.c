@@ -19,12 +19,12 @@
 
 /* Pour la compilation en -std=c11 */
 int getopt (int argc, char * const argv[],
-                  const char *optstring);
+                   const char *optstring);
  
 extern char *optarg;
 extern int optind, opterr, optopt;
  
-#include <getopt.h>
+// #include <getopt.h>
 
 /* flags pour savoir les options activées */
 enum Flags {
@@ -56,78 +56,57 @@ void checkOptions(int argc, char * argv[]){
 		switch (c) {
 	    case 's':
 	      flags += OPT_S;
-	      printf("option s\n");  //tmp
 	      if(strlen(optarg) == 1 && isdigit(optarg[0])){
 	      	N = atoi(optarg) + 4;
 	      	TAILLE_GRILLE = 1 << N;
-	      	printf("TAILLE_GRILLE = %d\n", TAILLE_GRILLE);
 	      } else {
 	      	printf("Argument error : a number (0 <= x <= 9) was expected.\n");
 	      }
 	      break;
 	    case 'm':
-	      printf("option m\n");
 	      flags += OPT_M;
 	      NB_EXECUTION = 10;
-	      //start = clock();
 	      break;
 	    case 'M':
-	      flags += OPT_BIGM;
-	      printf("option M\n");
+	      flags += OPT_BIGM;	      
 	      break;
 	    case 'a':
 	      flags += OPT_A;
-	      printf("option a\n");
 	      break;
 	    case 'i':
 	      flags += OPT_I;
-	      printf("option i\n");
-	      if(atoi(optarg)){
+	      if(atoi(optarg))
 	      	NB_ITER = atoi(optarg);
-	      	printf("nb_iter = %d\n", NB_ITER); //tmp
-	      } else {
+	      else 
 	      	printf("Erreur d'argument : un nombre supérieur à 0 est attendu.\n");
-	      }
 	      break;
 	    case 'e':
 	      flags += OPT_E;
-	      printf("option e\n");
-
 	      if(strlen(optarg) == 1 && isdigit(optarg[0])){
 	      	int tmp = atoi(optarg);
-	      	if (tmp >= 0 && tmp <= 5){
+	      	if (tmp >= 0 && tmp <= 5)
 	      		ETAPE = tmp;
-	      		printf("ETAPE = %d\n", ETAPE); //tmp
-	      	} else {
+	      	else
 	      		printf("Erreur d'argument : le nombre doit etre compris entre 0 et 5.\n");
-	      	}	
-	      } else {
+	      		
+	      } else
 	      	printf("Erreur d'argument : un nombre compris entre 0 et 5 est attendu.\n");
-	      }
-	     
 	      break;
 	    case 't':
 	      flags += OPT_T;
-	      printf("option t\n");
-	      
 	      if(strlen(optarg) == 1 && isdigit(optarg[0])){
 	      	int tmp = atoi(optarg);
 	      	if (tmp >= 0 && tmp <= 5){
 	      		NB_THREADS = NB_THREADS << tmp;
 	      		NB_THREADS *= NB_THREADS;
-	      		printf("NB_THREADS = %d\n", NB_THREADS); //tmp
-	      	} else {
-	      		printf("Erreur d'argument : le nombre doit etre compris entre 0 et 5.\n");
-	      	}	
-	      } else {
-	      	printf("Erreur d'argument : un nombre compris entre 0 et 5 est attendu.\n");
-	      }
+	      	} else 
+	      		printf("Erreur d'argument : le nombre doit etre compris entre 0 et 5.\n");	
+	      } else
+	      		printf("Erreur d'argument : un nombre compris entre 0 et 5 est attendu.\n");
 	      break;
 	    case '?':
-	      printf("Case ?\n");
 	      break;
 	    default:
-	      //printf("c);
 	      break;
 	    }
 	}
@@ -153,9 +132,9 @@ void execute(double * tab){
 	}
 	if(flags & OPT_A){
 		printf("Valeurs finales de la plaque:\n");
-		afficheQuartMatrice(mat, TAILLE_GRILLE);//afficheMatriceStandard(mat, TAILLE_GRILLE);
+		afficheQuartMatrice(mat, TAILLE_GRILLE);
 	}
-	suppressionMatrice(mat, TAILLE_GRILLE);	
+	suppressionMatrice(mat);	
 }
 
 //supprime les deux plus petites valeurs

@@ -43,13 +43,6 @@ caseDansMat * creationMatrice(int taille, double temp_froid){
 
 //affiche la matrice sur la sortie standard
 void afficheMatriceStandard(caseDansMat * mat, int taille){
-	/*for(int i = 0 ; i < taille ; ++i){
-		for(int j = 0 ; j < taille ; ++j){
-			caseDansMat * tmp = mat + i * taille + j;
-			printf("|%.2f|", tmp->valN);
-		}
-		printf("\n");
-	}*/
 	int d = 0;
 	int tailleMax = taille * taille;
 	while(d < tailleMax){	
@@ -85,24 +78,7 @@ void afficheQuartMatrice(caseDansMat * mat, int taille){
 	printf("\n");
 }
 
-//Affecte la valeur N+1 à la variable N
-//Reinitialise la valeur N+1
-void miseAJourMatrice(caseDansMat ** mat, int taille, double coefSurCase, double temp_froid){
-	for(int i = 0 ; i < taille  ; ++i){
-		for(int j = 0 ; j < taille ; ++j){
-			if(! mat[i][j].estChauffante){
-				mat[i][j].valeur = mat[i][j].valeur * coefSurCase + mat[i][j].valeurTmp;
-				mat[i][j].valeurTmp = temp_froid;
-			} else {
-				mat[i][j].valeurTmp = mat[i][j].valeur;
-			}
-		}
-	}
-}
-
 //Supprime la matrice en paramètre
-void suppressionMatrice(caseDansMat * mat, int taille){
-	/*for(int i = 0 ; i < taille ; ++i)
-		free(mat[i]);*/
+void suppressionMatrice(caseDansMat * mat){
 	free(mat);
 }

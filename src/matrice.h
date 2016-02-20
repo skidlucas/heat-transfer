@@ -30,9 +30,5 @@ void afficheMatriceFile(caseDansMat ** mat, int taille, FILE * fic);
 //Affiche le quart superieur de la matrice
 void afficheQuartMatrice(caseDansMat * mat, int taille);
 
-//Affecte la valeur N+1 à la variable N
-//Reinitialise la valeur N+1
-void miseAJourMatrice(caseDansMat ** mat, int taille, double coefSurCase, double temp_froid);
-
 //Supprime la matrice en parametre
-void suppressionMatrice(caseDansMat * mat, int taille);
+void suppressionMatrice(caseDansMat * mat);
