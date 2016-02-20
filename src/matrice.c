@@ -1,10 +1,10 @@
-/*
-*
-* Auteurs : Lucas Martinez / Lucas Soumille
-*
-* Permet de gerer la matrice correspondant à la plaque
-*
-*/
+/**
+ *
+ * Auteurs : Lucas Martinez, Lucas Soumille
+ *
+ * Permet de gerer la matrice correspondant a la plaque
+ *
+ */
 #include <stdio.h>
 #include <unistd.h>
 #include <ctype.h>
@@ -13,7 +13,22 @@
 #include "matrice.h"
 
 
-//Initialise les cases dans le matrice
+/**
+ * Permet de creer une matrice carree de la taille passee en parametre
+ *
+ * @author   Lucas Soumille
+ */
+caseDansMat * creationMatrice(int taille, double temp_froid){
+	caseDansMat * mat = malloc( taille * taille * sizeof(caseDansMat));
+	return mat;
+}
+
+
+/**
+ * Permet d'initialiser les cases dans la matrice
+ *
+ * @author   Lucas Soumille
+ */
 void initMatrice(caseDansMat * mat, int taille, int N, double temp_froid, double temp_chaud){
 	int minInd = (1 << (N - 1)) - (1 << (N - 4));
 	int maxInd = (1 << (N - 1)) + (1 << (N - 4));
@@ -30,18 +45,16 @@ void initMatrice(caseDansMat * mat, int taille, int N, double temp_froid, double
 				caseMat->valeurTmp = temp_froid;
 				caseMat->estChauffante = 0;	
 			}
-			
 		}
 	}
 }
 
-//creation d'une matrice carree de la taille passee en parametre 
-caseDansMat * creationMatrice(int taille, double temp_froid){
-	caseDansMat * mat = malloc( taille * taille * sizeof(caseDansMat));
-	return mat;
-}
 
-//affiche la matrice sur la sortie standard
+/**
+ * Permet d'afficher la matrice sur la sortie standard
+ *
+ * @author   Lucas Soumille
+ */
 void afficheMatriceStandard(caseDansMat * mat, int taille){
 	int d = 0;
 	int tailleMax = taille * taille;
@@ -52,17 +65,26 @@ void afficheMatriceStandard(caseDansMat * mat, int taille){
 	}
 }
 
-//ecrit la matrice dans le fichier passe en parametre
-void afficheMatriceFile(caseDansMat ** mat, int taille, FILE * fic){
-	for(int i = 0 ; i < taille  ; ++i){
-		for(int j = 0 ; j < taille ; ++j){
-			fprintf(fic, "|%d|", (int)mat[i][j].valeur );//round(mat[i][j].valN*100)/100);
-		}
-		fprintf(fic,"\n");
+/**
+ * Permet d'ecrire la matrice dans le fichier passe en parametre
+ *
+ * @author   Lucas Soumille
+ */
+void afficheMatriceFile(caseDansMat * mat, int taille, FILE * fic){
+	int d = 0;
+	int tailleMax = taille * taille;
+	while(d < tailleMax){	
+		fprintf(fic, "|%.2f|", round(mat[d].valeur*100)/100);
+		if(d++ != 0 && d % taille == 0)
+			fprintf(fic, "\n");
 	}
 }
 
-//Affiche le quart superieur de la matrice
+/**
+ * Permet d'afficher les valeurs aux indices i % 2^s = 0 du quart superieur gauche de la matrice
+ *
+ * @author   Lucas Soumille, Lucas Martinez
+ */
 void afficheQuartMatrice(caseDansMat * mat, int taille){
 	int pas = taille / 16; //on affiche une valeur tous les 2^s indices, soit tous les taille/16 indices
 	
@@ -78,7 +100,11 @@ void afficheQuartMatrice(caseDansMat * mat, int taille){
 	printf("\n");
 }
 
-//Supprime la matrice en paramètre
+/**
+ * Permet de supprimer la matrice donnee en parametre
+ *
+ * @author   Lucas Soumille
+ */
 void suppressionMatrice(caseDansMat * mat){
 	free(mat);
 }

@@ -1,10 +1,10 @@
-/*
-*
-* Auteurs : Lucas Martinez / Lucas Soumille
-*
-* main qui crée une plaque et lance la simulation
-*
-*/
+/**
+ *
+ * Auteurs : Lucas Martinez, Lucas Soumille
+ *
+ * Programme principal qui cree une plaque et lance la simulation
+ *
+ */
 
 #include <stdio.h>
 #include <unistd.h>
@@ -24,17 +24,16 @@ int getopt (int argc, char * const argv[],
 extern char *optarg;
 extern int optind, opterr, optopt;
  
-// #include <getopt.h>
 
-/* flags pour savoir les options activées */
+
+/* Flags pour savoir quelles options sont activees */
 enum Flags {
 	OPT_S       = 0x01,
 	OPT_M       = 0x02,
-	OPT_BIGM    = 0x04,
-	OPT_A       = 0x08,
-	OPT_I       = 0x10,
-	OPT_E 	  	= 0x20,
-	OPT_T		= 0x30
+	OPT_A    	= 0x04,
+	OPT_I       = 0x08,
+	OPT_E       = 0x10,
+	OPT_T 	  	= 0x20
 };
 
 int flags;
@@ -48,11 +47,14 @@ double TEMP_FROID = 0.0;
 double TEMP_CHAUD = 36.0;
 int NB_EXECUTION = 1;
 
-
-//recuperation des arguments
+/**
+ * Permet de recuperer les parametres passees en argument lors de l'execution du programme
+ *
+ * @author Lucas Soumille, Lucas Martinez
+ */
 void checkOptions(int argc, char * argv[]){
 	int c;
-	while ((c = getopt(argc , argv, "s:mMai:e:t:")) != -1){
+	while ((c = getopt(argc , argv, "s:mai:e:t:")) != -1){
 		switch (c) {
 	    case 's':
 	      flags += OPT_S;
@@ -60,15 +62,12 @@ void checkOptions(int argc, char * argv[]){
 	      	N = atoi(optarg) + 4;
 	      	TAILLE_GRILLE = 1 << N;
 	      } else {
-	      	printf("Argument error : a number (0 <= x <= 9) was expected.\n");
+	      	printf("-s => Erreur d'argument : un nombre compris entre 0 et 9 est attendu.\n");
 	      }
 	      break;
 	    case 'm':
 	      flags += OPT_M;
 	      NB_EXECUTION = 10;
-	      break;
-	    case 'M':
-	      flags += OPT_BIGM;	      
 	      break;
 	    case 'a':
 	      flags += OPT_A;
@@ -78,7 +77,7 @@ void checkOptions(int argc, char * argv[]){
 	      if(atoi(optarg))
 	      	NB_ITER = atoi(optarg);
 	      else 
-	      	printf("Erreur d'argument : un nombre supérieur à 0 est attendu.\n");
+	      	printf("-i => Erreur d'argument : un nombre supérieur à 0 est attendu.\n");
 	      break;
 	    case 'e':
 	      flags += OPT_E;
@@ -87,10 +86,10 @@ void checkOptions(int argc, char * argv[]){
 	      	if (tmp >= 0 && tmp <= 5)
 	      		ETAPE = tmp;
 	      	else
-	      		printf("Erreur d'argument : le nombre doit etre compris entre 0 et 5.\n");
+	      		printf("-e => Erreur d'argument : le nombre doit etre compris entre 0 et 5.\n");
 	      		
 	      } else
-	      	printf("Erreur d'argument : un nombre compris entre 0 et 5 est attendu.\n");
+	      	printf("-e => Erreur d'argument : un nombre compris entre 0 et 5 est attendu.\n");
 	      break;
 	    case 't':
 	      flags += OPT_T;
@@ -100,9 +99,9 @@ void checkOptions(int argc, char * argv[]){
 	      		NB_THREADS = NB_THREADS << tmp;
 	      		NB_THREADS *= NB_THREADS;
 	      	} else 
-	      		printf("Erreur d'argument : le nombre doit etre compris entre 0 et 5.\n");	
+	      		printf("-t => Erreur d'argument : le nombre doit etre compris entre 0 et 5.\n");	
 	      } else
-	      		printf("Erreur d'argument : un nombre compris entre 0 et 5 est attendu.\n");
+	      		printf("-t => Erreur d'argument : un nombre compris entre 0 et 5 est attendu.\n");
 	      break;
 	    case '?':
 	      break;
@@ -113,7 +112,12 @@ void checkOptions(int argc, char * argv[]){
 }
 
 
-//simulation d'un scénario / retourne un tableau des temps d'execution
+/**
+ * Permet d'executer la simulation du transfert de chaleur en fonction des parametres
+ * passes precedemment.
+ *
+ * @author   Lucas Soumille, Lucas Martinez
+ */
 void execute(double * tab){
 	caseDansMat * mat = creationMatrice(TAILLE_GRILLE, TEMP_FROID);
 	for(int i = 0 ; i < NB_EXECUTION ; ++i){
@@ -137,7 +141,11 @@ void execute(double * tab){
 	suppressionMatrice(mat);	
 }
 
-//supprime les deux plus petites valeurs
+/**
+ * Permet de supprimer les valeurs extremes de mesure
+ *
+ * @author   Lucas Soumille, Lucas Martinez
+ */
 void supprimeMins(double * tab){
 	double valMin = tab[0];
 	int indMin = 0;
@@ -156,7 +164,11 @@ void supprimeMins(double * tab){
 	tab[indMax] = tab[indMin] = 0.0;
 }
 
-//calcule la moyenne des executions
+/**
+ * Permet de calculer la moyenne des mesures des executions
+ *
+ * @author   Lucas Soumille, Lucas Martinez
+ */
 double calculMoyenne(double * tab){
 	supprimeMins(tab);
 	double total = 0;
@@ -166,6 +178,7 @@ double calculMoyenne(double * tab){
 		total += tab[i];
 	return total / (NB_EXECUTION - 2);
 }
+
 
 int main(int argc, char * argv[]){
 	checkOptions(argc, argv);

@@ -1,10 +1,10 @@
-/*
-*
-* Auteurs : Lucas Martinez / Lucas Soumille
-*
-* Simulation de la progression de la chaleur sur la surface
-*
-*/
+/**
+ *
+ * Auteurs : Lucas Martinez, Lucas Soumille
+ *
+ * Simulation de la progression de la chaleur sur la surface
+ *
+ */
 
 #include <stdio.h>
 #include <unistd.h>
@@ -14,7 +14,12 @@
 #include <stdlib.h>
 #include "heatTransfer.h"
 
-//propage la chaleur a toutes les cases autour de la case d'indice passe en parametre
+/**
+ * Permet de simuler une diffusion de la chaleur de maniere horizontale autour de la
+ * case passee en parametre
+ *
+ * @author   Lucas Soumille, Lucas Martinez
+ */
 void simulationHori(caseDansMat * mat, int taille){
 	caseDansMat * caseMat;
 	caseDansMat * caseMatGauche;
@@ -35,7 +40,12 @@ void simulationHori(caseDansMat * mat, int taille){
 	}
 }
 
-//simule une diffusion verticale de chaleur
+/**
+ * Permet de simuler une diffusion de la chaleur de maniere verticale autour de la
+ * case passee en parametre
+ *
+ * @author   Lucas Soumille, Lucas Martinez
+ */
 void simulationVerti(caseDansMat * mat, int taille){
 	caseDansMat * caseMat;
 	caseDansMat * caseMatHaut;
@@ -58,7 +68,11 @@ void simulationVerti(caseDansMat * mat, int taille){
 	}
 }
 
-//Simule une iteration de propagation de chaleur
+/**
+ * Permet de simuler une iteration de propagation de chaleur
+ *
+ * @author   Lucas Soumille, Lucas Martinez
+ */
 void simulationIteration(int taille, int N, caseDansMat * mat){
 	simulationHori(mat, taille);
 	simulationVerti(mat, taille);

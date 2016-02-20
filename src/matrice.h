@@ -1,10 +1,10 @@
-/*
-*
-* Auteurs : Lucas Martinez / Lucas Soumille
-*
-* Permet de gerer la matrice correspondant à la plaque
-*
-*/
+/**
+ *
+ * Auteurs : Lucas Martinez, Lucas Soumille
+ *
+ * Permet de gerer la matrice correspondant à la plaque
+ *
+ */
 
 #include <stdio.h>
 
@@ -15,20 +15,32 @@ typedef struct {
 	int estChauffante;
 } caseDansMat;
 
-//creation d'une matrice carree de la taille passee en parametre 
+/**
+ * Permet de creer une matrice carree de la taille passee en parametre
+ */
 caseDansMat * creationMatrice(int taille,  double temp_froid);
 
-//Initialise les cases dans le matrice
+/**
+ * Permet d'initialiser les cases dans la matrice
+ */
 void initMatrice(caseDansMat * mat, int taille, int N, double temp_froid, double temp_chaud);
 
-//affiche la matrice sur la sortie standard
+/**
+ * Permet d'afficher la matrice sur la sortie standard
+ */
 void afficheMatriceStandard(caseDansMat * mat, int taille);
 
-//ecrit la matrice dans le fichier passe en parametre
-void afficheMatriceFile(caseDansMat ** mat, int taille, FILE * fic);
+/**
+ * Permet d'ecrire la matrice dans le fichier passe en parametre
+ */
+void afficheMatriceFile(caseDansMat * mat, int taille, FILE * fic);
 
-//Affiche le quart superieur de la matrice
+/**
+ * Permet d'afficher les valeurs aux indices i % 2^s = 0 du quart superieur gauche de la matrice
+ */
 void afficheQuartMatrice(caseDansMat * mat, int taille);
-
-//Supprime la matrice en parametre
+	
+/**
+ * Permet de supprimer la matrice donnee en parametre
+ */
 void suppressionMatrice(caseDansMat * mat);
