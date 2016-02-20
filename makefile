@@ -1,5 +1,5 @@
-SRC=./src
-BIN=./bin
+SRC=src
+BIN=bin
 
 CC = gcc
 CCFLAGS = -g -std=c11 -Wall
@@ -19,10 +19,11 @@ $(EXEC): $(OBJ_FILES)
 	$(CC_COMPILE) $^ -o $@ -lm
 
 $(OBJ_FILES): $(BIN)/%.o : $(SRC)/%.c
+	- mkdir -vp $(BIN)
 	$(CC_COMPILE) -c $< -o $@
 
 # Clean
 
 clean:
-	rm -rf $(BIN)/*
+	rm -rf $(BIN)
 
