@@ -48,16 +48,6 @@ double TEMP_FROID = 0.0;
 double TEMP_CHAUD = 36.0;
 int NB_EXECUTION = 1;
 
-//verifie que s est un chiffre
-int isNumber(char * s){
-	int i = 0;
-    while (s[i]){
-        if (!isdigit(s[i]))
-            return 0;
-        ++i;
-    }
-    return 1;
-}
 
 //recuperation des arguments
 void checkOptions(int argc, char * argv[]){
@@ -150,15 +140,21 @@ void execute(double * tab){
 	for(int i = 0 ; i < NB_EXECUTION ; ++i){
 		start = clock();
 		initMatrice(mat, TAILLE_GRILLE, N, TEMP_FROID, TEMP_CHAUD);
-		//positionneCaseChauffante(mat, TAILLE_GRILLE, N, TEMP_CHAUD);
+		if(i == 0 && (flags & OPT_A)){ //afficher la matrice avec les valeurs initiales une seule fois
+			printf("Valeurs initiales de la plaque:\n");
+			afficheQuartMatrice(mat, TAILLE_GRILLE);
+		} 
+			 
 		for(int j = 0 ; j < NB_ITER ; ++j){
 			simulationIteration(TAILLE_GRILLE, N, mat);
 		}
 		end = clock();
 		tab[i] = (double) (end - start) / CLOCKS_PER_SEC;
 	}
-	if(flags & OPT_A)
+	if(flags & OPT_A){
+		printf("Valeurs finales de la plaque:\n");
 		afficheQuartMatrice(mat, TAILLE_GRILLE);//afficheMatriceStandard(mat, TAILLE_GRILLE);
+	}
 	suppressionMatrice(mat, TAILLE_GRILLE);	
 }
 
