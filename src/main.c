@@ -194,8 +194,8 @@ int main(int argc, char * argv[]){
 	double tempsCpuExecute[NB_EXECUTION], tempsUserExecute[NB_EXECUTION];
 	execute(tempsCpuExecute, tempsUserExecute);
 	if(flags & OPT_M)
-		printf("Temps total de consommation CPU: %f\n", calculMoyenne(tempsCpuExecute));
+		printf("Temps total de consommation CPU d'une itération (en sec): %f\n", calculMoyenne(tempsCpuExecute));
 	if(flags & OPT_BIGM)
-		printf("Temps total utilisateur: %f\n", calculMoyenne(tempsUserExecute));
+		printf("Temps total utilisateur d'une itération (en sec): %f\n", calculMoyenne(tempsUserExecute));
 	return 0;
 } 
