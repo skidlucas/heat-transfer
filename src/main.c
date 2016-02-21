@@ -30,10 +30,11 @@ extern int optind, opterr, optopt;
 enum Flags {
 	OPT_S       = 0x01,
 	OPT_M       = 0x02,
-	OPT_A    	= 0x04,
-	OPT_I       = 0x08,
-	OPT_E       = 0x10,
-	OPT_T 	  	= 0x20
+	OPT_BIGM    = 0x04,
+	OPT_A       = 0x08,
+	OPT_I       = 0x10,
+	OPT_E 	  	= 0x20,
+	OPT_T		= 0x30
 };
 
 int flags;
@@ -42,7 +43,8 @@ int TAILLE_GRILLE = 16;
 int NB_ITER = 10000;
 int ETAPE = 0;
 int NB_THREADS = 1;
-clock_t start, end;
+clock_t start_cpu, end_cpu;
+time_t start_user, end_user;
 double TEMP_FROID = 0.0;
 double TEMP_CHAUD = 36.0;
 int NB_EXECUTION = 1;
@@ -54,7 +56,7 @@ int NB_EXECUTION = 1;
  */
 void checkOptions(int argc, char * argv[]){
 	int c;
-	while ((c = getopt(argc , argv, "s:mai:e:t:")) != -1){
+	while ((c = getopt(argc , argv, "s:mMai:e:t:")) != -1){
 		switch (c) {
 	    case 's':
 	      flags += OPT_S;
@@ -68,6 +70,10 @@ void checkOptions(int argc, char * argv[]){
 	    case 'm':
 	      flags += OPT_M;
 	      NB_EXECUTION = 10;
+	      break;
+	    case 'M':
+	      flags += OPT_BIGM;
+	      NB_EXECUTION = 10;	      
 	      break;
 	    case 'a':
 	      flags += OPT_A;
@@ -118,10 +124,11 @@ void checkOptions(int argc, char * argv[]){
  *
  * @author   Lucas Soumille, Lucas Martinez
  */
-void execute(double * tab){
+void execute(double * tab_cpu, double * tab_user){
 	caseDansMat * mat = creationMatrice(TAILLE_GRILLE, TEMP_FROID);
 	for(int i = 0 ; i < NB_EXECUTION ; ++i){
-		start = clock();
+		start_cpu = clock();
+		start_user = time(NULL);
 		initMatrice(mat, TAILLE_GRILLE, N, TEMP_FROID, TEMP_CHAUD);
 		if(i == 0 && (flags & OPT_A)){ //afficher la matrice avec les valeurs initiales une seule fois
 			printf("Valeurs initiales de la plaque:\n");
@@ -131,8 +138,10 @@ void execute(double * tab){
 		for(int j = 0 ; j < NB_ITER ; ++j){
 			simulationIteration(TAILLE_GRILLE, N, mat);
 		}
-		end = clock();
-		tab[i] = (double) (end - start) / CLOCKS_PER_SEC;
+		end_cpu = clock();
+		end_user = time(NULL);
+		tab_cpu[i] = (double) (end_cpu - start_cpu) / CLOCKS_PER_SEC;
+		tab_user[i] = (double) (end_user - start_user);
 	}
 	if(flags & OPT_A){
 		printf("Valeurs finales de la plaque:\n");
@@ -182,9 +191,11 @@ double calculMoyenne(double * tab){
 
 int main(int argc, char * argv[]){
 	checkOptions(argc, argv);
-	double tempsExecute[NB_EXECUTION];
-	execute(tempsExecute);
+	double tempsCpuExecute[NB_EXECUTION], tempsUserExecute[NB_EXECUTION];
+	execute(tempsCpuExecute, tempsUserExecute);
 	if(flags & OPT_M)
-		printf("Temps total de consommation CPU: %f\n", calculMoyenne(tempsExecute));
+		printf("Temps total de consommation CPU: %f\n", calculMoyenne(tempsCpuExecute));
+	if(flags & OPT_BIGM)
+		printf("Temps total utilisateur: %f\n", calculMoyenne(tempsUserExecute));
 	return 0;
 } 
