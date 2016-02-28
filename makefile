@@ -2,7 +2,7 @@ SRC=src
 BIN=bin
 
 CC = gcc
-CCFLAGS = -g -std=c11 -Wall
+CCFLAGS = -pthread -g -std=gnu11 -D_GNU_SOURCE -Wall 
 CC_COMPILE = $(CC) $(CCFLAGS)
 
 EXEC = ./bin/heatTransfer

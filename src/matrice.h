@@ -39,6 +39,12 @@ void afficheMatriceFile(caseDansMat * mat, int taille, FILE * fic);
  * Permet d'afficher les valeurs aux indices i % 2^s = 0 du quart superieur gauche de la matrice
  */
 void afficheQuartMatrice(caseDansMat * mat, int taille);
+
+/**
+ * Sépare la matrice en fonction du nombre de parties voulues
+ * Retourne un tableau contenant la première case des sous matrices
+ */
+int * separeMatrice(caseDansMat * mat, int taille, int nbThread);
 	
 /**
  * Permet de supprimer la matrice donnee en parametre

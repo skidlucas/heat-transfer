@@ -132,11 +132,10 @@ void execute(double * tab_cpu, double * tab_user){
 		initMatrice(mat, TAILLE_GRILLE, N, TEMP_FROID, TEMP_CHAUD);
 		if(i == 0 && (flags & OPT_A)){ //afficher la matrice avec les valeurs initiales une seule fois
 			printf("Valeurs initiales de la plaque:\n");
-			afficheQuartMatrice(mat, TAILLE_GRILLE);
-		} 
-			 
+			afficheMatriceStandard(mat, TAILLE_GRILLE);
+		} 	 
 		for(int j = 0 ; j < NB_ITER ; ++j){
-			simulationIteration(TAILLE_GRILLE, N, mat);
+		//	simulationIteration(TAILLE_GRILLE, NB_THREADS, mat);
 		}
 		end_cpu = clock();
 		end_user = time(NULL);
