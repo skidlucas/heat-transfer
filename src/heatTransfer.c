@@ -50,22 +50,22 @@ void * simulationHori(void * infos){
 	caseDansMat * caseMat;
 	caseDansMat * caseMatGauche;
 	caseDansMat * caseMatDroite;
-	int taille = matAvecInfos->indXFin - matAvecInfos->indXDeb;
+	int taille = matAvecInfos->indXFin - matAvecInfos->indXDeb + 2;
 	printf("X fin : %d\n", matAvecInfos->indXFin);
 	printf("Y fin : %d\n", matAvecInfos->indYFin);
-	for(int i = matAvecInfos->indXDeb ; i < matAvecInfos->indXFin ; ++i){
-		for(int j = matAvecInfos->indYDeb ; j <= matAvecInfos->indYFin ; ++j){
+	for(int i = matAvecInfos->indXDeb - 1 ; i < matAvecInfos->indXFin - 1; ++i){
+		for(int j = matAvecInfos->indYDeb - 1 ; j < matAvecInfos->indYFin - 1 ; ++j){
 			caseMat = matAvecInfos->mat + i * taille + j;
+			printf("Id = %d\n", caseMat->estConstante);
 			caseMatGauche = matAvecInfos->mat + i * taille + (j - 1);
 			caseMatDroite = matAvecInfos->mat + i * taille + (j + 1); 
-			if(j == 0)
+			/*if(j == 0)
 				caseMat->valeurTmp = (4.0 * caseMat->valeur + caseMatDroite->valeur) / 6;
 			else if (j == taille - 1) 
 				caseMat->valeurTmp = (4.0 * caseMat->valeur + caseMatGauche->valeur) / 6;
-			else {
-				printf("else hori i = %d / j = %d\n", i, j);
-				caseMat->valeurTmp = (4.0 * caseMat->valeur + caseMatDroite->valeur + caseMatGauche->valeur) / 6;
-			}
+			else {*/
+			caseMat->valeurTmp = (4.0 * caseMat->valeur + caseMatDroite->valeur + caseMatGauche->valeur) / 6;
+			//}
 		}
 	}
 	printf("fin simulation horizontale\n");
@@ -105,21 +105,21 @@ void * simulationVerti(void * infos){
 	caseDansMat * caseMat;
 	caseDansMat * caseMatHaut;
 	caseDansMat * caseMatBas;
-	int taille = matAvecInfos->indXFin - matAvecInfos->indXDeb;
-	for(int i = matAvecInfos->indXDeb ; i < matAvecInfos->indXFin ; ++i){
-		for(int j = matAvecInfos->indYDeb ; j < matAvecInfos->indYFin ; ++j){
+	int taille = matAvecInfos->indXFin - matAvecInfos->indXDeb + 2;
+	for(int i = matAvecInfos->indXDeb - 1 ; i < matAvecInfos->indXFin - 1; ++i){
+		for(int j = matAvecInfos->indYDeb - 1 ; j < matAvecInfos->indYFin - 1 ; ++j){
 			caseMat = matAvecInfos->mat + i * taille + j;
 			//si la case est chauffante on fait pas la mise a jour de sa valeur
-			if(caseMat->estChauffante == 1) 
+			if(caseMat->estConstante == 1) 
 				continue;
 			caseMatHaut = matAvecInfos->mat + (i - 1) * taille + j;
 			caseMatBas = matAvecInfos->mat + (i + 1) * taille + j;
-			if(i == 0)
+			/*if(i == 0)
 				caseMat->valeur = (4.0 * caseMat->valeurTmp + caseMatBas->valeurTmp)  / 6;
 			else if (i == taille - 1) 
-				caseMat->valeur = (4.0 * caseMat->valeurTmp + caseMatHaut->valeurTmp) / 6;
-			else 
-				caseMat->valeur = (4.0 * caseMat->valeurTmp + caseMatBas->valeurTmp + caseMatHaut->valeurTmp) / 6;
+				caseMat->valeur = (4.0 * caseMat->valeurTmp + caseMatHaut->valeurTmp) / 6;*/
+			//else 
+			caseMat->valeur = (4.0 * caseMat->valeurTmp + caseMatBas->valeurTmp + caseMatHaut->valeurTmp) / 6;
 			
 		}
 	}
@@ -144,39 +144,47 @@ void simulationIteration(int taille, int nbThread, caseDansMat * mat){
 	simulationVerti(mat, taille);*/
 	printf("debut simulation\n");
 	int cpt = 0;
-	pthread_t * allThread = malloc(nbThread * sizeof(pthread_t) + 1);
-	caseAndIndex * infos = malloc(nbThread * sizeof(caseAndIndex) + 1);
+	pthread_t * allThread = malloc(nbThread  * sizeof(pthread_t));
+	caseAndIndex * infos = malloc(nbThread * sizeof(caseAndIndex));
 	int pas = sqrt(taille * taille / nbThread);// car on veut pas déborder
-	printf("pas : %d\n", pas);
-	printf("taille : %d\n", taille);
+	int tailleTotale = taille + 2;
 	pthread_barrier_init(&barriere, NULL, nbThread);
-	for(int i = 0 ; i < taille ; i += pas){
-		for(int j = 0 ; j < taille ; j += pas){
+	/*for(int i = 0 ; i < tailleTotale ; i += pas + 1){
+		for(int j = 0 ; j < tailleTotale ; j += pas + 1){
+			//printf("i : %d / j : %d", i , j);
+			if(i == 0 || j == 0 || i == tailleTotale - 1 || j == tailleTotale - 1)continue;
 			infos[cpt].mat = mat + i * taille + j;
-			infos[cpt].indXDeb = i;
-			infos[cpt].indYDeb = j;
-			infos[cpt].indXFin = i + pas;
-			infos[cpt].indYFin = j + pas;
+			printf("%f\n", infos[cpt].mat->valeur);
+			infos[cpt].indXDeb = i + 1;
+			infos[cpt].indYDeb = j + 1;
+			infos[cpt].indXFin = i + pas + 1;
+			infos[cpt].indYFin = j + pas + 1;
 			//pthread_create(&allThread[cpt], NULL, simulationHori, (void *)&infos[cpt]);
 			//pthread_create(&allThread[cpt], NULL, simulationVerti, (void *)&infos[cpt]);
 			printDatas(infos, nbThread);
 			pthread_create(&(allThread[cpt]), NULL, simulation, (void *)&infos[cpt]);
 			++cpt;
 		}
-	}
-	/*cpt = 0;
-	pthread_barrier_wait (&barriere);
-	for(int i = 0 ; i < taille ; i += pas){
-		for(int j = 0 ; j < taille ; j += pas){
-			pthread_create(&allThread[cpt], NULL, simulationVerti, (void *)&infos[cpt]);
-			cpt++;
-		}
 	}*/
+	for(int i = 1 ; i <= taille ; i += pas){
+		for(int j = 1 ; j <= taille ; j += pas){
+			printf("i : %d / j : %d\n", i, j);
+			infos[cpt].mat = mat + i * tailleTotale + j;
+			infos[cpt].indXDeb = i;
+			infos[cpt].indYDeb = j;
+			infos[cpt].indXFin = i + pas;
+			infos[cpt].indYFin = j + pas;
+			//pthread_create(&allThread[cpt], NULL, simulationHori, (void *)&infos[cpt]);
+			//pthread_create(&allThread[cpt], NULL, simulationVerti, (void *)&infos[cpt]);
+			//printDatas(infos, nbThread);
+			pthread_create(&(allThread[cpt]), NULL, simulation, (void *)&infos[cpt]);
+			++cpt;
+		}
+	}
 	for(cpt = 0 ; cpt < nbThread; ++cpt)
 	{
 		pthread_join(allThread[cpt], NULL);
 	}
-	//pthread_join(allThread[0], NULL);
 	pthread_barrier_destroy(&barriere);
 	free(infos);
 	free(allThread);
@@ -189,5 +197,6 @@ void printDatas(caseAndIndex * cas, int nbThread){
 		printf("indY : %d\n", cas[i].indYDeb);
 		printf("oldX : %d\n", cas[i].indXFin);
 		printf("oldY : %d\n", cas[i].indYFin);
+		printf("idCase : %d\n", cas[i].mat->estConstante);
 	}
 }

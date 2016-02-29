@@ -135,7 +135,7 @@ void execute(double * tab_cpu, double * tab_user){
 			afficheMatriceStandard(mat, TAILLE_GRILLE);
 		} 	 
 		for(int j = 0 ; j < NB_ITER ; ++j){
-		//	simulationIteration(TAILLE_GRILLE, NB_THREADS, mat);
+			simulationIteration(TAILLE_GRILLE, NB_THREADS, mat);
 		}
 		end_cpu = clock();
 		end_user = time(NULL);
@@ -144,7 +144,7 @@ void execute(double * tab_cpu, double * tab_user){
 	}
 	if(flags & OPT_A){
 		printf("Valeurs finales de la plaque:\n");
-		afficheQuartMatrice(mat, TAILLE_GRILLE);
+		afficheMatriceStandard(mat, TAILLE_GRILLE);
 	}
 	suppressionMatrice(mat);	
 }
