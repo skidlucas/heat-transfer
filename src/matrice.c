@@ -34,7 +34,6 @@ void initMatrice(caseDansMat * mat, int taille, int N, double temp_froid, double
 	int maxInd = (1 << (N - 1)) + (1 << (N - 4)) + 1;
 	caseDansMat * caseMat;
 	int tailleLigne = taille + 2;
-	int cpt = 0;
 	for(int i = 0 ; i <= taille + 1 ; ++i){
 		for(int j = 0 ; j <= taille + 1 ; ++j){
 			caseMat = mat + i * tailleLigne + j;
@@ -68,8 +67,7 @@ void afficheMatriceStandard(caseDansMat * mat, int taille){
 	for(int i = 0 ; i <= taille + 1 ; ++i){
 		for(int j = 0 ; j <= taille + 1 ; ++j){
 			caseMat = mat + i * tailleLigne + j;
-			printf("|%.2f|", round(caseMat->valeur*100)/100);
-			//printf("|%d|", caseMat->estConstante);
+			printf("%d|", (int)caseMat->valeur);
 		}
 		printf("\n");
 	}
@@ -77,33 +75,17 @@ void afficheMatriceStandard(caseDansMat * mat, int taille){
 }
 
 /**
- * Permet d'ecrire la matrice dans le fichier passe en parametre
- *
- * @author   Lucas Soumille
- */
-void afficheMatriceFile(caseDansMat * mat, int taille, FILE * fic){
-	int d = 0;
-	int tailleMax = taille * taille;
-	while(d < tailleMax){	
-		fprintf(fic, "|%.2f|", round(mat[d].valeur*100)/100);
-		if(d++ != 0 && d % taille == 0)
-			fprintf(fic, "\n");
-	}
-}
-
-/**
  * Permet d'afficher les valeurs aux indices i % 2^s = 0 du quart superieur gauche de la matrice
  *
  * @author   Lucas Soumille, Lucas Martinez
  */
-void afficheQuartMatrice(caseDansMat * mat, int taille){
+void afficheQuartMatrice(caseDansMat * mat, int taille, int n){
 	int pas = taille / 16; //on affiche une valeur tous les 2^s indices, soit tous les taille/16 indices
-	
 	int indMil = taille / 2;
 	caseDansMat * caseMat;
-	for(int i = 0 ; i < indMil ; i += pas){
-		for(int j = 0 ; j < indMil ; j += pas){
-			caseMat = mat + i * taille + j;
+	for(int i = 1 ; i <= indMil  ; i += pas){
+		for(int j = 1 ; j <= indMil ; j += pas){
+			caseMat = mat + i * (taille + 2) + j;
 			printf("|%.2f|", round(caseMat->valeur*100)/100);
 		}
 		printf("\n");

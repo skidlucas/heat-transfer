@@ -38,16 +38,19 @@ enum Flags {
 };
 
 int flags;
-int N = 4;
-int TAILLE_GRILLE = 16;
+int TAILLE_GRILLE[] = {16, 64, 256};
+int N[] = {4, 6, 8};
+int nbTaille = 3;
 int NB_ITER = 10000;
-int ETAPE = 0;
-int NB_THREADS = 1;
+int ETAPE[] = {0, 1};
+int nbEtape = 2;
+int NB_THREADS[] = {4, 64};
+int nbThread = 2;
 clock_t start_cpu, end_cpu;
 time_t start_user, end_user;
 double TEMP_FROID = 0.0;
 double TEMP_CHAUD = 36.0;
-int NB_EXECUTION = 1;
+int NB_EXECUTION = 10;
 
 /**
  * Permet de recuperer les parametres passees en argument lors de l'execution du programme
@@ -60,11 +63,20 @@ void checkOptions(int argc, char * argv[]){
 		switch (c) {
 	    case 's':
 	      flags += OPT_S;
-	      if(strlen(optarg) == 1 && isdigit(optarg[0])){
+	      /*if(strlen(optarg) == 1 && isdigit(optarg[0])){
 	      	N = atoi(optarg) + 4;
 	      	TAILLE_GRILLE = 1 << N;
 	      } else {
 	      	printf("-s => Erreur d'argument : un nombre compris entre 0 et 9 est attendu.\n");
+	      }*/
+	      nbTaille = 0;
+	      int size = strlen(optarg);
+	      for(int i = 0 ; i < size ; ++i){
+	      	if((optarg[i] - '0') < 0 || (optarg[i] - '0') > 9)
+	      		continue;
+	      	N[i] = (optarg[i] - '0') + 4;
+	      	TAILLE_GRILLE[i] = 1 << N[i]; //equivalent a utiliser pow 
+	      	++nbTaille;
 	      }
 	      break;
 	    case 'm':
@@ -87,7 +99,7 @@ void checkOptions(int argc, char * argv[]){
 	      break;
 	    case 'e':
 	      flags += OPT_E;
-	      if(strlen(optarg) == 1 && isdigit(optarg[0])){
+	      /*if(strlen(optarg) == 1 && isdigit(optarg[0])){
 	      	int tmp = atoi(optarg);
 	      	if (tmp >= 0 && tmp <= 5)
 	      		ETAPE = tmp;
@@ -95,11 +107,19 @@ void checkOptions(int argc, char * argv[]){
 	      		printf("-e => Erreur d'argument : le nombre doit etre compris entre 0 et 5.\n");
 	      		
 	      } else
-	      	printf("-e => Erreur d'argument : un nombre compris entre 0 et 5 est attendu.\n");
+	      	printf("-e => Erreur d'argument : un nombre compris entre 0 et 5 est attendu.\n");*/
+	      nbEtape = 0;
+	      size = strlen(optarg);
+	      for(int i = 0 ; i < size ; ++i){
+	      	if((optarg[i] - '0') < 0 || (optarg[i] - '0') > 5)
+	      		continue;
+	      	ETAPE[i] = optarg[i] - '0'; //conversion en int  
+	 		++nbEtape;
+	      }
 	      break;
 	    case 't':
 	      flags += OPT_T;
-	      if(strlen(optarg) == 1 && isdigit(optarg[0])){
+	      /*if(strlen(optarg) == 1 && isdigit(optarg[0])){
 	      	int tmp = atoi(optarg);
 	      	if (tmp >= 0 && tmp <= 5){
 	      		NB_THREADS = NB_THREADS << tmp;
@@ -107,11 +127,21 @@ void checkOptions(int argc, char * argv[]){
 	      	} else 
 	      		printf("-t => Erreur d'argument : le nombre doit etre compris entre 0 et 5.\n");	
 	      } else
-	      		printf("-t => Erreur d'argument : un nombre compris entre 0 et 5 est attendu.\n");
+	      		printf("-t => Erreur d'argument : un nombre compris entre 0 et 5 est attendu.\n");*/
+	      nbThread = 0;
+	      size = strlen(optarg);
+	      for(int i = 0 ; i < size ; ++i){
+	      	if((optarg[i] - '0') < 0 || (optarg[i] - '0') > 5)
+	      		continue;
+	      	int nb = 1 << (optarg[i] - '0');
+	      	NB_THREADS[i] = nb * nb;   
+	      	++nbThread;
+	      }
 	      break;
 	    case '?':
 	      break;
 	    default:
+	      flags += OPT_M;
 	      break;
 	    }
 	}
@@ -124,18 +154,24 @@ void checkOptions(int argc, char * argv[]){
  *
  * @author   Lucas Soumille, Lucas Martinez
  */
-void execute(double * tab_cpu, double * tab_user){
-	caseDansMat * mat = creationMatrice(TAILLE_GRILLE, TEMP_FROID);
+void execute(double * tab_cpu, double * tab_user, int taille, int n, int nbEtape, int nbThread){
+	caseDansMat * mat = creationMatrice(taille, TEMP_FROID);
+	printf("taille %d\n", taille);
+	int premiereIter = 0;
+	int derniereIter = 0;
 	for(int i = 0 ; i < NB_EXECUTION ; ++i){
 		start_cpu = clock();
 		start_user = time(NULL);
-		initMatrice(mat, TAILLE_GRILLE, N, TEMP_FROID, TEMP_CHAUD);
-		if(i == 0 && (flags & OPT_A)){ //afficher la matrice avec les valeurs initiales une seule fois
+		initMatrice(mat, taille, n, TEMP_FROID, TEMP_CHAUD);
+		 //afficher la matrice avec les valeurs initiales
+		if(i == 0 && (flags & OPT_A)){
 			printf("Valeurs initiales de la plaque:\n");
-			afficheMatriceStandard(mat, TAILLE_GRILLE);
+			afficheQuartMatrice(mat, taille, n);
 		} 	 
 		for(int j = 0 ; j < NB_ITER ; ++j){
-			simulationIteration(TAILLE_GRILLE, NB_THREADS, mat);
+			premiereIter = (j == 0) ? 1 : 0;
+			derniereIter = (j == NB_ITER - 1) ? 1 : 0;
+			simulationIteration(taille, nbThread, mat, nbEtape, premiereIter, derniereIter);
 		}
 		end_cpu = clock();
 		end_user = time(NULL);
@@ -144,7 +180,7 @@ void execute(double * tab_cpu, double * tab_user){
 	}
 	if(flags & OPT_A){
 		printf("Valeurs finales de la plaque:\n");
-		afficheMatriceStandard(mat, TAILLE_GRILLE);
+		afficheQuartMatrice(mat, taille, n);
 	}
 	suppressionMatrice(mat);	
 }
@@ -191,10 +227,29 @@ double calculMoyenne(double * tab){
 int main(int argc, char * argv[]){
 	checkOptions(argc, argv);
 	double tempsCpuExecute[NB_EXECUTION], tempsUserExecute[NB_EXECUTION];
-	execute(tempsCpuExecute, tempsUserExecute);
-	if(flags & OPT_M)
-		printf("Temps total de consommation CPU d'une itération (en sec): %f\n", calculMoyenne(tempsCpuExecute));
-	if(flags & OPT_BIGM)
-		printf("Temps total utilisateur d'une itération (en sec): %f\n", calculMoyenne(tempsUserExecute));
+	for(int i = 0 ; i < nbEtape ; ++i){
+		for(int j = 0 ; j < nbTaille ; ++j){
+			for(int k = 0 ; k < nbThread ; ++k){
+				if(i == 0){
+					printf("Execution de l'étape 0 sur une plaque de taille %d * %d avec 1 thread\n", TAILLE_GRILLE[j], TAILLE_GRILLE[j]);
+					execute(tempsCpuExecute, tempsUserExecute, TAILLE_GRILLE[j], N[j], 0, 1);
+					if(flags & OPT_M)
+						printf("Temps total de consommation CPU d'une itération (en sec): %f\n", calculMoyenne(tempsCpuExecute));
+					if(flags & OPT_BIGM)
+						printf("Temps total utilisateur d'une itération (en sec): %f\n", calculMoyenne(tempsUserExecute));	
+					break;
+				} else {
+					printf("Execution de l'étape %d sur une plaque de taille %d * %d avec %d thread(s)\n", 
+					ETAPE[i], TAILLE_GRILLE[j], TAILLE_GRILLE[j], NB_THREADS[k]);
+					execute(tempsCpuExecute, tempsUserExecute, TAILLE_GRILLE[j], N[j], ETAPE[i], NB_THREADS[k]);
+					if(flags & OPT_M)
+						printf("Temps total de consommation CPU d'une itération (en sec): %f\n", calculMoyenne(tempsCpuExecute));
+					if(flags & OPT_BIGM)
+						printf("Temps total utilisateur d'une itération (en sec): %f\n", calculMoyenne(tempsUserExecute));	
+				}
+				
+			}
+		}
+	}
 	return 0;
 } 

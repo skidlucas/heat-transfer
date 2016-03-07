@@ -31,14 +31,9 @@ void initMatrice(caseDansMat * mat, int taille, int N, double temp_froid, double
 void afficheMatriceStandard(caseDansMat * mat, int taille);
 
 /**
- * Permet d'ecrire la matrice dans le fichier passe en parametre
- */
-void afficheMatriceFile(caseDansMat * mat, int taille, FILE * fic);
-
-/**
  * Permet d'afficher les valeurs aux indices i % 2^s = 0 du quart superieur gauche de la matrice
  */
-void afficheQuartMatrice(caseDansMat * mat, int taille);
+void afficheQuartMatrice(caseDansMat * mat, int taille, int n);
 	
 /**
  * Permet de supprimer la matrice donnee en parametre

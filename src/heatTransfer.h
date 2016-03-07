@@ -7,8 +7,8 @@
  */
 #include "matrice.h"
 
+/* Informations passees à chaque thread */
  typedef struct {
- 	caseDansMat * mat;
  	int indXDeb;
  	int indYDeb;
  	int indXFin;
@@ -34,4 +34,4 @@
 /**
  * Permet de simuler une iteration de propagation de chaleur
  */
-void simulationIteration(int taille, int nbThread, caseDansMat * mat);
+void simulationIteration(int taille, int nbThread, caseDansMat * mat, int etape, int premiere, int derniere);
