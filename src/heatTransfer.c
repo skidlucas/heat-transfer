@@ -15,9 +15,9 @@
 #include "heatTransfer.h"
 #include <pthread.h>
 
-pthread_barrier_t barriere;
 caseDansMat * matGeneral;
 int tailleTotale;
+int compteur = 0;
 
 /**
  * Permet de simuler une diffusion de la chaleur de maniere horizontale autour de la
@@ -71,9 +71,22 @@ void * simulationVerti(void * infos){
  * @author   Lucas Soumille 
  */
 void * simulationPourChaqueThread(void * infos){
-	simulationHori(infos);
-	pthread_barrier_wait(&barriere);
-	simulationVerti(infos);
+	caseAndIndex * infosNbIter = (caseAndIndex *)infos;
+	//printf("debut simulation thread\n");
+	printf("nb Iter : %d\n", infosNbIter->nbIter);
+	for(int i = 0 ; i < (infosNbIter->nbIter) ; ++i){
+		simulationHori(infos);
+		printf("compteur %d\n", ++compteur);
+		pthread_barrier_wait(infosNbIter->barriereMil);
+		printf("passage barriereMil\n");
+		simulationVerti(infos);
+	//	printf("bloquer verticale %d\n", i);
+		//pthread_barrier_wait(infosNbIter->barriereFin);	
+		pthread_barrier_wait(infosNbIter->barriereMil);
+	}
+	//printf("Adresse barriere execution : %d\n",infosNbIter->barriereExecution);
+	//printf("Passage compteur : %d\n", ++compteur);
+	pthread_barrier_wait(infosNbIter->barriereExecution);
 	pthread_exit(NULL);
 }
 
@@ -82,31 +95,55 @@ void * simulationPourChaqueThread(void * infos){
  *
  * @author   Lucas Soumille, Lucas Martinez
  */
-void simulationIteration(int taille, int nbThread, caseDansMat * mat, int etape, int premiere, int derniere){
-	int cpt = 0;
+void simulation(int taille, int nbIter, int nbThread, caseDansMat * mat, int etape){
+	printf("debut simulation nbThread %d\n", nbThread);
+	//compteur = 0;
 	pthread_t * allThread = malloc(nbThread  * sizeof(pthread_t));
 	caseAndIndex * infos = malloc(nbThread * sizeof(caseAndIndex));
+	pthread_barrier_t * barriereMil = malloc(sizeof(pthread_barrier_t));
+	pthread_barrier_t * barriereFin = malloc(sizeof(pthread_barrier_t));
+	pthread_barrier_t * barriereExecution = malloc(sizeof(pthread_barrier_t));
+	int cpt = 0;
+	int rc;
 	int pas = sqrt(taille * taille / nbThread);
-	if(pas < 0) // si le nombre de thread est trop grand 
+	if(pas < 1){
 		pas = 1;
+		nbThread = taille * taille;
+	} // si le nombre de thread est trop grand 
+	pthread_barrier_init(barriereMil, NULL, nbThread);
+	pthread_barrier_init(barriereFin, NULL, nbThread);
+	pthread_barrier_init(barriereExecution, NULL, nbThread + 1);
 	tailleTotale = taille + 2;
 	matGeneral = mat;
-	if(premiere)
-		pthread_barrier_init(&barriere, NULL, nbThread);
 	for(int i = 1 ; i <= taille ; i += pas){
 		for(int j = 1 ; j <= taille ; j += pas){
 			infos[cpt].indXDeb = i;
 			infos[cpt].indYDeb = j;
 			infos[cpt].indXFin = i + pas;
 			infos[cpt].indYFin = j + pas;
-			pthread_create(&(allThread[cpt]), NULL, simulationPourChaqueThread,(void *) &infos[cpt]);
-			cpt++;
+			infos[cpt].nbIter = nbIter;
+			infos[cpt].barriereMil = barriereMil;
+			infos[cpt].barriereFin = barriereFin;
+			infos[cpt].barriereExecution = barriereExecution;
+			//printf("adresse mil %d\n", infos[cpt].barriereMil);
+			rc = pthread_create(&(allThread[cpt]), NULL, simulationPourChaqueThread,(void *) &infos[cpt]);
+			if(rc){
+				printf("%d\n", rc);
+			}
+			printf("cpt : %d | taille  :%d | pas : %d | nbThread :%d\n", cpt++, taille, pas, nbThread);
 		}
 	}
-	for(int k = 0; k < nbThread; ++k)
-		pthread_join(allThread[k], NULL);
-	if(derniere)
-		pthread_barrier_destroy(&barriere);
+	waitFunction(barriereExecution);
+	pthread_barrier_destroy(barriereMil);
+	pthread_barrier_destroy(barriereFin);
+	pthread_barrier_destroy(barriereExecution);
+	free(barriereFin);
+	free(barriereMil);
+	free(barriereExecution); //to do destroy + free
 	free(infos);
 	free(allThread);
+}
+
+void waitFunction(pthread_barrier_t * barrier){
+	pthread_barrier_wait(barrier);
 }

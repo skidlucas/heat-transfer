@@ -13,6 +13,10 @@
  	int indYDeb;
  	int indXFin;
  	int indYFin;
+ 	pthread_barrier_t * barriereMil;
+ 	pthread_barrier_t * barriereFin;
+ 	pthread_barrier_t * barriereExecution;
+ 	int nbIter;
  } caseAndIndex;
 
 
@@ -34,4 +38,4 @@
 /**
  * Permet de simuler une iteration de propagation de chaleur
  */
-void simulationIteration(int taille, int nbThread, caseDansMat * mat, int etape, int premiere, int derniere);
+void simulation(int taille, int nbIter, int nbThread, caseDansMat * mat, int etape);

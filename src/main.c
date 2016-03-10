@@ -50,7 +50,7 @@ clock_t start_cpu, end_cpu;
 time_t start_user, end_user;
 double TEMP_FROID = 0.0;
 double TEMP_CHAUD = 36.0;
-int NB_EXECUTION = 10;
+int NB_EXECUTION = 1;
 
 /**
  * Permet de recuperer les parametres passees en argument lors de l'execution du programme
@@ -59,16 +59,11 @@ int NB_EXECUTION = 10;
  */
 void checkOptions(int argc, char * argv[]){
 	int c;
+	printf("Bonjour\n");
 	while ((c = getopt(argc , argv, "s:mMai:e:t:")) != -1){
 		switch (c) {
 	    case 's':
 	      flags += OPT_S;
-	      /*if(strlen(optarg) == 1 && isdigit(optarg[0])){
-	      	N = atoi(optarg) + 4;
-	      	TAILLE_GRILLE = 1 << N;
-	      } else {
-	      	printf("-s => Erreur d'argument : un nombre compris entre 0 et 9 est attendu.\n");
-	      }*/
 	      nbTaille = 0;
 	      int size = strlen(optarg);
 	      for(int i = 0 ; i < size ; ++i){
@@ -81,7 +76,7 @@ void checkOptions(int argc, char * argv[]){
 	      break;
 	    case 'm':
 	      flags += OPT_M;
-	      NB_EXECUTION = 10;
+	      NB_EXECUTION = 6;
 	      break;
 	    case 'M':
 	      flags += OPT_BIGM;
@@ -92,6 +87,7 @@ void checkOptions(int argc, char * argv[]){
 	      break;
 	    case 'i':
 	      flags += OPT_I;
+	      printf("dans i %s\n", optarg);
 	      if(atoi(optarg))
 	      	NB_ITER = atoi(optarg);
 	      else 
@@ -134,14 +130,12 @@ void checkOptions(int argc, char * argv[]){
 	      	if((optarg[i] - '0') < 0 || (optarg[i] - '0') > 5)
 	      		continue;
 	      	int nb = 1 << (optarg[i] - '0');
-	      	NB_THREADS[i] = nb * nb;   
+	      	NB_THREADS[i] = nb * nb; 
+	      	printf("Nb Thread args%d\n", NB_THREADS[i]);  
 	      	++nbThread;
 	      }
 	      break;
-	    case '?':
-	      break;
 	    default:
-	      flags += OPT_M;
 	      break;
 	    }
 	}
@@ -168,11 +162,12 @@ void execute(double * tab_cpu, double * tab_user, int taille, int n, int nbEtape
 			printf("Valeurs initiales de la plaque:\n");
 			afficheQuartMatrice(mat, taille, n);
 		} 	 
-		for(int j = 0 ; j < NB_ITER ; ++j){
+		/*for(int j = 0 ; j < NB_ITER ; ++j){
 			premiereIter = (j == 0) ? 1 : 0;
 			derniereIter = (j == NB_ITER - 1) ? 1 : 0;
 			simulationIteration(taille, nbThread, mat, nbEtape, premiereIter, derniereIter);
-		}
+		}*/
+		simulation(taille, NB_ITER, nbThread, mat, nbEtape);
 		end_cpu = clock();
 		end_user = time(NULL);
 		tab_cpu[i] = (double) (end_cpu - start_cpu) / CLOCKS_PER_SEC;
@@ -230,7 +225,7 @@ int main(int argc, char * argv[]){
 	for(int i = 0 ; i < nbEtape ; ++i){
 		for(int j = 0 ; j < nbTaille ; ++j){
 			for(int k = 0 ; k < nbThread ; ++k){
-				if(i == 0){
+				if(ETAPE[i] == 0){
 					printf("Execution de l'étape 0 sur une plaque de taille %d * %d avec 1 thread\n", TAILLE_GRILLE[j], TAILLE_GRILLE[j]);
 					execute(tempsCpuExecute, tempsUserExecute, TAILLE_GRILLE[j], N[j], 0, 1);
 					if(flags & OPT_M)
