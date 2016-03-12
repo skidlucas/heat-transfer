@@ -13,6 +13,7 @@
 #include "matrice.h"
 
 int tailleLigneBords;
+
 /**
  * Permet de creer une matrice carree de la taille passee en parametre
  *
@@ -62,36 +63,6 @@ void initMatrice(caseDansMat * mat, int taille, int N, double temp_froid, double
 	}
 }
 
-
-/**
- * Permet d'afficher la matrice sur la sortie standard
- *
- * @author   Lucas Soumille, Lucas Martinez
- */
-void afficheMatriceStandard(caseDansMat * mat, int taille){
-	int d = 0;
-	int tailleMax = taille * taille;
-	while(d < tailleMax){	
-		printf("|%.2f|", round(mat[d].valeur*100)/100);
-		if(d++ != 0 && d % taille == 0)
-			printf("\n");
-	}
-}
-
-/**
- * Permet d'ecrire la matrice dans le fichier passe en parametre
- *
- * @author   Lucas Soumille
- */
-void afficheMatriceFile(caseDansMat * mat, int taille, FILE * fic){
-	int d = 0;
-	int tailleMax = taille * taille;
-	while(d < tailleMax){	
-		fprintf(fic, "|%.2f|", round(mat[d].valeur*100)/100);
-		if(d++ != 0 && d % taille == 0)
-			fprintf(fic, "\n");
-	}
-}
 
 /**
  * Permet d'afficher les valeurs aux indices i % 2^s = 0 du quart superieur gauche de la matrice

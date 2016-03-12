@@ -26,16 +26,6 @@ caseDansMat * creationMatrice(int taille,  double temp_froid);
 void initMatrice(caseDansMat * mat, int taille, int N, double temp_froid, double temp_chaud);
 
 /**
- * Permet d'afficher la matrice sur la sortie standard
- */
-void afficheMatriceStandard(caseDansMat * mat, int taille);
-
-/**
- * Permet d'ecrire la matrice dans le fichier passe en parametre
- */
-void afficheMatriceFile(caseDansMat * mat, int taille, FILE * fic);
-
-/**
  * Permet d'afficher les valeurs aux indices i % 2^s = 0 du quart superieur gauche de la matrice
  */
 void afficheQuartMatrice(caseDansMat * mat, int taille);

@@ -16,7 +16,6 @@
 
 
 int vraieTaille, nbCaseParThread;
-
 /**
  * Permet de simuler une diffusion de la chaleur de maniere horizontale autour de la
  * case passee en parametre
@@ -30,8 +29,6 @@ void simulationHori(wrappedMatrice* wrappedMat){
 
 	for(int i = wrappedMat->x ; i < (wrappedMat->x + wrappedMat->tailleLigne) ; ++i){
 		for(int j = wrappedMat->y ; j < (wrappedMat->y + wrappedMat->tailleLigne) ; ++j){
-			// printf("i: %d, j: %d, x: %d, y: %d, tailleLigne: %d, vraieTaille: %d\n",i,j,wrappedMat->x, wrappedMat->y,
-			// 	wrappedMat->tailleLigne, vraieTaille);
 			caseMat = wrappedMat->matrice + i * vraieTaille + j;
 			caseMatGauche = wrappedMat->matrice + i * vraieTaille + (j - 1);
 			caseMatDroite = wrappedMat->matrice + i * vraieTaille + (j + 1); 
@@ -53,8 +50,6 @@ void simulationVerti(wrappedMatrice* wrappedMat){
 
 	for(int i = wrappedMat->x ; i < (wrappedMat->x + wrappedMat->tailleLigne) ; ++i){
 		for(int j = wrappedMat->y ; j < (wrappedMat->y + wrappedMat->tailleLigne) ; ++j){
-			// printf("i: %d, j: %d, x: %d, y: %d, tailleLigne: %d, vraieTaille: %d\n",i,j,wrappedMat->x, wrappedMat->y,
-			// 	wrappedMat->tailleLigne, vraieTaille);
 			caseMat = wrappedMat->matrice + i * vraieTaille + j;
 			//si la case est chauffante on fait pas la mise a jour de sa valeur
 			if(caseMat->estConstante == 1) continue;
@@ -67,15 +62,23 @@ void simulationVerti(wrappedMatrice* wrappedMat){
 	}
 }
 
+/**
+ * Fonction qui lance la simulation de l'etape 0 (sans threads)
+ * 
+ * @author Lucas Martinez
+ */
 void simulationE0(wrappedMatrice* wrappedMat){
 	for(int i = 0 ; i < wrappedMat->nbIter ; ++i){
 		simulationHori(wrappedMat);
 		simulationVerti(wrappedMat);	
 	}
-	pthread_exit(NULL);
 }
 
-
+/**
+ * Fonction qui lance la simulation de l'etape 1 (avec barrieres)
+ * 
+ * @author Lucas Martinez
+ */
 void simulationE1(wrappedMatrice* wrappedMat){
 	int ret;
 	for (int i = 0; i < wrappedMat->nbIter; ++i){
@@ -97,6 +100,12 @@ void simulationE1(wrappedMatrice* wrappedMat){
 	pthread_exit(NULL);
 }
 
+/**
+ * Fonction qui renvoie la fonction a lancer dans le thread en fonction de l'etape en parametre
+ * (N'est pas encore utile car traitement different si etape = 0)
+ * 
+ * @author Lucas Martinez
+ */
 void* simulation(int etape){
 	switch (etape){
 		case 0:
@@ -110,10 +119,14 @@ void* simulation(int etape){
 	return 0;
 }
 
-void initBarrieres(int taille, int nbThread, pthread_barrier_t* barriereHori, pthread_barrier_t* barriereVerti){
+/**
+ * Fonction qui initialise les barrieres posix en fonction du nombre de threads
+ * 
+ * @author Lucas Martinez
+ */
+void initBarrieres(int nbThread, pthread_barrier_t* barriereHori, pthread_barrier_t* barriereVerti){
 	int ret;
 
-	//initialisation des barrieres
 	ret = pthread_barrier_init(barriereHori, NULL, nbThread);
 	if(ret) {
 		perror("Erreur pthread_barrier_init : barriereHori\n");
@@ -126,6 +139,25 @@ void initBarrieres(int taille, int nbThread, pthread_barrier_t* barriereHori, pt
 	}
 }
 
+/**
+ * Fonction qui initialise la matrice enveloppee et lance la simulation de l'etape 0
+ * 
+ * @author Lucas Martinez
+ */
+void lancerThread(int taille, int nbIter, caseDansMat* mat, wrappedMatrice* wrappedMat){
+	wrappedMat->x = 1;
+	wrappedMat->y = 1;
+	wrappedMat->tailleLigne = nbCaseParThread;
+	wrappedMat->nbIter = nbIter;
+	wrappedMat->matrice = mat;
+	simulationE0(wrappedMat);
+}
+
+/**
+ * Fonction qui initialise les matrices enveloppees et lance les threads qui effectueront la simulation
+ * 
+ * @author Lucas Martinez
+ */
 void lancerThreads(int taille, int etape, int nbIter, caseDansMat* mat, pthread_t* threads, 
 				   wrappedMatrice* wrappedMat, pthread_barrier_t* barriereHori, pthread_barrier_t* barriereVerti){
 	int n, ret; //nb threads créés, valeur de retour
@@ -151,7 +183,6 @@ void lancerThreads(int taille, int etape, int nbIter, caseDansMat* mat, pthread_
 		}
 	}
 
-	//on attend la fin des threads
 	for(int i = 0 ; i < n ; ++i){
 		ret = pthread_join(threads[i], NULL);
 		if(ret){
@@ -161,6 +192,11 @@ void lancerThreads(int taille, int etape, int nbIter, caseDansMat* mat, pthread_
 	}
 }
 
+/**
+ * Fonction qui detruit les barrieres et libere la memoire
+ * 
+ * @author Lucas Martinez
+ */
 void rendreBarrieres(pthread_barrier_t* barriereHori, pthread_barrier_t* barriereVerti){
 	int ret;
 	ret = pthread_barrier_destroy(barriereHori);
@@ -181,7 +217,7 @@ void rendreBarrieres(pthread_barrier_t* barriereHori, pthread_barrier_t* barrier
 /**
  * Permet de simuler une iteration de propagation de chaleur
  *
- * @author   Lucas Soumille, Lucas Martinez
+ * @author   Lucas Martinez
  */
 void initSimulation(int taille, int etape, int nbIter, int nbThread, caseDansMat * mat){
 	vraieTaille = taille + 2; //bords
@@ -204,22 +240,25 @@ void initSimulation(int taille, int etape, int nbIter, int nbThread, caseDansMat
 		exit(1);
 	}
 
-	pthread_barrier_t* barriereHori = malloc(sizeof(pthread_barrier_t));
-	if (!barriereHori){
-		perror("Erreur d'allocation mémoire, arret du programme.");
-		exit(1);
+	if (etape == 0){
+		lancerThread(taille, nbIter, mat, wrappedMat); //un seul thread, comportement différent
+	} else {
+		pthread_barrier_t* barriereHori = malloc(sizeof(pthread_barrier_t));
+		if (!barriereHori){
+			perror("Erreur d'allocation mémoire, arret du programme.");
+			exit(1);
+		}
+
+		pthread_barrier_t* barriereVerti = malloc(sizeof(pthread_barrier_t));
+		if (!barriereVerti){
+			perror("Erreur d'allocation mémoire, arret du programme.");
+			exit(1);
+		}
+
+		initBarrieres(nbThread, barriereHori, barriereVerti);
+		lancerThreads(taille, etape, nbIter, mat, threads, wrappedMat, barriereHori, barriereVerti);
+		rendreBarrieres(barriereHori, barriereVerti);
+		free(wrappedMat);
+		free(threads);
 	}
-
-	pthread_barrier_t* barriereVerti = malloc(sizeof(pthread_barrier_t));
-	if (!barriereVerti){
-		perror("Erreur d'allocation mémoire, arret du programme.");
-		exit(1);
-	}
-
-	initBarrieres(taille, nbThread, barriereHori, barriereVerti);
-	lancerThreads(taille, etape, nbIter, mat, threads, wrappedMat, barriereHori, barriereVerti);
-	rendreBarrieres(barriereHori, barriereVerti);
-	free(wrappedMat);
-	free(threads);
-
 }
