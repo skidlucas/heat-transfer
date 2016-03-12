@@ -15,10 +15,6 @@
 #include "heatTransfer.h"
 #include <pthread.h>
 
-caseDansMat * matGeneral;
-int tailleTotale;
-int compteur = 0;
-
 /**
  * Permet de simuler une diffusion de la chaleur de maniere horizontale autour de la
  * case passee en parametre
@@ -32,9 +28,9 @@ void * simulationHori(void * infos){
 	caseDansMat * caseMatDroite;
 	for(int i = matAvecInfos->indXDeb ; i < matAvecInfos->indXFin ; ++i){
 		for(int j = matAvecInfos->indYDeb ; j < matAvecInfos->indYFin  ; ++j){
-			caseMat = matGeneral + i * tailleTotale + j;
-			caseMatGauche = matGeneral + i * tailleTotale + (j - 1);
-			caseMatDroite = matGeneral + i * tailleTotale + (j + 1); 
+			caseMat = matAvecInfos->matGeneral + i * matAvecInfos->tailleTotale + j;
+			caseMatGauche = matAvecInfos->matGeneral + i * matAvecInfos->tailleTotale + (j - 1);
+			caseMatDroite = matAvecInfos->matGeneral + i * matAvecInfos->tailleTotale + (j + 1); 
 			caseMat->valeurTmp = (4.0 * caseMat->valeur + caseMatDroite->valeur + caseMatGauche->valeur) / 6;
 		}
 	}	
@@ -53,12 +49,12 @@ void * simulationVerti(void * infos){
 	caseDansMat * caseMatBas;
 	for(int i = matAvecInfos->indXDeb ; i < matAvecInfos->indXFin ; ++i){
 		for(int j = matAvecInfos->indYDeb ; j < matAvecInfos->indYFin  ; ++j){
-			caseMat = matGeneral + i * tailleTotale + j;
+			caseMat = matAvecInfos->matGeneral + i * matAvecInfos->tailleTotale + j;
 			//si la case est chauffante on fait pas la mise a jour de sa valeur
 			if(caseMat->estConstante == 1) 
 				continue;
-			caseMatHaut = matGeneral + (i - 1) * tailleTotale + j;
-			caseMatBas = matGeneral + (i + 1) * tailleTotale + j;
+			caseMatHaut = matAvecInfos->matGeneral + (i - 1) * matAvecInfos->tailleTotale + j;
+			caseMatBas = matAvecInfos->matGeneral + (i + 1) * matAvecInfos->tailleTotale + j;
 			caseMat->valeur = (4.0 * caseMat->valeurTmp + caseMatBas->valeurTmp + caseMatHaut->valeurTmp) / 6;
 			
 		}
@@ -66,27 +62,41 @@ void * simulationVerti(void * infos){
 }
 
 /**
- * Fonction de simulation appelee par chaque thread
+ * Fonction de simulation appelee par chaque thread pour l'etape 1
  *
  * @author   Lucas Soumille 
  */
-void * simulationPourChaqueThread(void * infos){
+void * simulationEtape1(void * infos){
 	caseAndIndex * infosNbIter = (caseAndIndex *)infos;
-	//printf("debut simulation thread\n");
-	printf("nb Iter : %d\n", infosNbIter->nbIter);
+	int erreur;
 	for(int i = 0 ; i < (infosNbIter->nbIter) ; ++i){
 		simulationHori(infos);
-		printf("compteur %d\n", ++compteur);
-		pthread_barrier_wait(infosNbIter->barriereMil);
-		printf("passage barriereMil\n");
+		erreur = pthread_barrier_wait(infosNbIter->barriereMil);
+		if(erreur && erreur != PTHREAD_BARRIER_SERIAL_THREAD){
+			printf("Erreur dans le wait de la barriere milieu (erreur %d)\n", erreur);
+			exit(1);
+		}
 		simulationVerti(infos);
-	//	printf("bloquer verticale %d\n", i);
-		//pthread_barrier_wait(infosNbIter->barriereFin);	
-		pthread_barrier_wait(infosNbIter->barriereMil);
+		erreur = pthread_barrier_wait(infosNbIter->barriereFin);
+		if(erreur && erreur != PTHREAD_BARRIER_SERIAL_THREAD){
+			printf("Erreur dans le wait de la barriere fin (erreur %d)\n", erreur);
+			exit(1);
+		}
 	}
-	//printf("Adresse barriere execution : %d\n",infosNbIter->barriereExecution);
-	//printf("Passage compteur : %d\n", ++compteur);
-	pthread_barrier_wait(infosNbIter->barriereExecution);
+	pthread_exit(NULL);
+}
+
+/**
+ * Fonction de simulation appelee par chaque thread pour l'etape 0
+ *
+ * @author   Lucas Soumille 
+ */
+void * simulationEtape0(void * infos){
+	caseAndIndex * infosNbIter = (caseAndIndex *)infos;
+	for(int i = 0 ; i < (infosNbIter->nbIter) ; ++i){
+		simulationHori(infos);
+		simulationVerti(infos);	
+	}
 	pthread_exit(NULL);
 }
 
@@ -96,25 +106,35 @@ void * simulationPourChaqueThread(void * infos){
  * @author   Lucas Soumille, Lucas Martinez
  */
 void simulation(int taille, int nbIter, int nbThread, caseDansMat * mat, int etape){
-	printf("debut simulation nbThread %d\n", nbThread);
-	//compteur = 0;
+	int erreur;
 	pthread_t * allThread = malloc(nbThread  * sizeof(pthread_t));
 	caseAndIndex * infos = malloc(nbThread * sizeof(caseAndIndex));
 	pthread_barrier_t * barriereMil = malloc(sizeof(pthread_barrier_t));
 	pthread_barrier_t * barriereFin = malloc(sizeof(pthread_barrier_t));
-	pthread_barrier_t * barriereExecution = malloc(sizeof(pthread_barrier_t));
+	if(allThread == NULL || infos == NULL || barriereMil == NULL || barriereFin == NULL){
+		printf("Erreur dans l'allocation mémoire dans la simulation");
+		exit(1);
+	}
 	int cpt = 0;
-	int rc;
+	void * fonctionAExcecuter = fonctionEtape(etape);
 	int pas = sqrt(taille * taille / nbThread);
+	// si le nombre de thread est trop grand 
 	if(pas < 1){
 		pas = 1;
 		nbThread = taille * taille;
-	} // si le nombre de thread est trop grand 
-	pthread_barrier_init(barriereMil, NULL, nbThread);
-	pthread_barrier_init(barriereFin, NULL, nbThread);
-	pthread_barrier_init(barriereExecution, NULL, nbThread + 1);
-	tailleTotale = taille + 2;
-	matGeneral = mat;
+	}
+	//initialisation des barrieres
+	erreur = pthread_barrier_init(barriereMil, NULL, nbThread);
+	if(erreur) {
+		printf("Erreur dans l'initialisation de la barriere du milieu (erreur %d)\n", erreur);
+		exit(1);
+	}
+	erreur = pthread_barrier_init(barriereFin, NULL, nbThread);
+	if(erreur) {
+		printf("Erreur dans l'initialisation de la barriere de fin (erreur %d)\n", erreur);
+		exit(1);
+	}
+	//Lancement des threads
 	for(int i = 1 ; i <= taille ; i += pas){
 		for(int j = 1 ; j <= taille ; j += pas){
 			infos[cpt].indXDeb = i;
@@ -124,26 +144,45 @@ void simulation(int taille, int nbIter, int nbThread, caseDansMat * mat, int eta
 			infos[cpt].nbIter = nbIter;
 			infos[cpt].barriereMil = barriereMil;
 			infos[cpt].barriereFin = barriereFin;
-			infos[cpt].barriereExecution = barriereExecution;
-			//printf("adresse mil %d\n", infos[cpt].barriereMil);
-			rc = pthread_create(&(allThread[cpt]), NULL, simulationPourChaqueThread,(void *) &infos[cpt]);
-			if(rc){
-				printf("%d\n", rc);
+			infos[cpt].matGeneral = mat;
+			infos[cpt].tailleTotale = taille + 2;
+			erreur = pthread_create(&(allThread[cpt]), NULL, fonctionAExcecuter,(void *) &infos[cpt]);
+			if(erreur){
+				printf("Erreur dans la creation du thread (erreur %d)\n", erreur);
+				exit(1);
 			}
-			printf("cpt : %d | taille  :%d | pas : %d | nbThread :%d\n", cpt++, taille, pas, nbThread);
+			cpt++;
 		}
 	}
-	waitFunction(barriereExecution);
-	pthread_barrier_destroy(barriereMil);
-	pthread_barrier_destroy(barriereFin);
-	pthread_barrier_destroy(barriereExecution);
+	//on attend la fin des threads
+	for(int i = 0 ; i < cpt ; ++i)
+		erreur = pthread_join(allThread[i], NULL);
+		if(erreur){
+			printf("Erreur dans le join d'un thread (erreur %d)\n", erreur);
+			exit(1);
+		}
+	//on rend la mémoire
+	erreur = pthread_barrier_destroy(barriereMil);
+	if(erreur) 
+		printf("Erreur dans la destruction de la barriere du milieu (erreur %d)\n", erreur);
+	erreur = pthread_barrier_destroy(barriereFin);
+	if(erreur) 
+		printf("Erreur dans la destruction de la barriere de fin (erreur %d)\n", erreur);
 	free(barriereFin);
 	free(barriereMil);
-	free(barriereExecution); //to do destroy + free
 	free(infos);
 	free(allThread);
 }
 
-void waitFunction(pthread_barrier_t * barrier){
-	pthread_barrier_wait(barrier);
+/**
+ * Retourne le pointeur sur la fonction a executer pour l'etape passee en parametre
+ * de la simulation
+ *
+ * @Author Lucas Soumille
+ */
+void * fonctionEtape(int etape){
+	if(etape == 0)
+		return &simulationEtape0;
+	else 
+		return &simulationEtape1;
 }

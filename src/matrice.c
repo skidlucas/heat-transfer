@@ -20,6 +20,10 @@
  */
 caseDansMat * creationMatrice(int taille, double temp_froid){
 	caseDansMat * mat = malloc( (taille + 2) * (taille + 2) * sizeof(caseDansMat));
+	if(mat == NULL){
+		printf("Erreur dans l'allocation mémoire de la matrice \n");
+		exit(1);
+	}
 	return mat;
 }
 

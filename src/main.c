@@ -50,7 +50,9 @@ clock_t start_cpu, end_cpu;
 time_t start_user, end_user;
 double TEMP_FROID = 0.0;
 double TEMP_CHAUD = 36.0;
-int NB_EXECUTION = 1;
+int NB_EXECUTION = 10;
+
+struct rusage usage;
 
 /**
  * Permet de recuperer les parametres passees en argument lors de l'execution du programme
@@ -59,7 +61,6 @@ int NB_EXECUTION = 1;
  */
 void checkOptions(int argc, char * argv[]){
 	int c;
-	printf("Bonjour\n");
 	while ((c = getopt(argc , argv, "s:mMai:e:t:")) != -1){
 		switch (c) {
 	    case 's':
@@ -87,7 +88,6 @@ void checkOptions(int argc, char * argv[]){
 	      break;
 	    case 'i':
 	      flags += OPT_I;
-	      printf("dans i %s\n", optarg);
 	      if(atoi(optarg))
 	      	NB_ITER = atoi(optarg);
 	      else 
@@ -95,15 +95,6 @@ void checkOptions(int argc, char * argv[]){
 	      break;
 	    case 'e':
 	      flags += OPT_E;
-	      /*if(strlen(optarg) == 1 && isdigit(optarg[0])){
-	      	int tmp = atoi(optarg);
-	      	if (tmp >= 0 && tmp <= 5)
-	      		ETAPE = tmp;
-	      	else
-	      		printf("-e => Erreur d'argument : le nombre doit etre compris entre 0 et 5.\n");
-	      		
-	      } else
-	      	printf("-e => Erreur d'argument : un nombre compris entre 0 et 5 est attendu.\n");*/
 	      nbEtape = 0;
 	      size = strlen(optarg);
 	      for(int i = 0 ; i < size ; ++i){
@@ -115,15 +106,6 @@ void checkOptions(int argc, char * argv[]){
 	      break;
 	    case 't':
 	      flags += OPT_T;
-	      /*if(strlen(optarg) == 1 && isdigit(optarg[0])){
-	      	int tmp = atoi(optarg);
-	      	if (tmp >= 0 && tmp <= 5){
-	      		NB_THREADS = NB_THREADS << tmp;
-	      		NB_THREADS *= NB_THREADS;
-	      	} else 
-	      		printf("-t => Erreur d'argument : le nombre doit etre compris entre 0 et 5.\n");	
-	      } else
-	      		printf("-t => Erreur d'argument : un nombre compris entre 0 et 5 est attendu.\n");*/
 	      nbThread = 0;
 	      size = strlen(optarg);
 	      for(int i = 0 ; i < size ; ++i){
@@ -131,11 +113,11 @@ void checkOptions(int argc, char * argv[]){
 	      		continue;
 	      	int nb = 1 << (optarg[i] - '0');
 	      	NB_THREADS[i] = nb * nb; 
-	      	printf("Nb Thread args%d\n", NB_THREADS[i]);  
 	      	++nbThread;
 	      }
 	      break;
 	    default:
+	      flags+= OPT_M;
 	      break;
 	    }
 	}
@@ -150,7 +132,6 @@ void checkOptions(int argc, char * argv[]){
  */
 void execute(double * tab_cpu, double * tab_user, int taille, int n, int nbEtape, int nbThread){
 	caseDansMat * mat = creationMatrice(taille, TEMP_FROID);
-	printf("taille %d\n", taille);
 	int premiereIter = 0;
 	int derniereIter = 0;
 	for(int i = 0 ; i < NB_EXECUTION ; ++i){
@@ -162,12 +143,8 @@ void execute(double * tab_cpu, double * tab_user, int taille, int n, int nbEtape
 			printf("Valeurs initiales de la plaque:\n");
 			afficheQuartMatrice(mat, taille, n);
 		} 	 
-		/*for(int j = 0 ; j < NB_ITER ; ++j){
-			premiereIter = (j == 0) ? 1 : 0;
-			derniereIter = (j == NB_ITER - 1) ? 1 : 0;
-			simulationIteration(taille, nbThread, mat, nbEtape, premiereIter, derniereIter);
-		}*/
 		simulation(taille, NB_ITER, nbThread, mat, nbEtape);
+		//calcul de l'empreinte mémoire pour une exécution
 		end_cpu = clock();
 		end_user = time(NULL);
 		tab_cpu[i] = (double) (end_cpu - start_cpu) / CLOCKS_PER_SEC;
@@ -177,6 +154,8 @@ void execute(double * tab_cpu, double * tab_user, int taille, int n, int nbEtape
 		printf("Valeurs finales de la plaque:\n");
 		afficheQuartMatrice(mat, taille, n);
 	}
+	if(getrusage(RUSAGE_SELF, &usage) != -1)
+		printf("empreinte mémoire max d'une execution %d kb\n", usage.ru_maxrss);
 	suppressionMatrice(mat);	
 }
 
