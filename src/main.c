@@ -62,6 +62,11 @@ double TEMP_CHAUD = 36.0;
 int NB_EXECUTION = 1;
 struct rusage usage;
 
+//par défaut :
+int nbExecTaille = 3;
+int nbExecEtape = 2;
+int nbExecThread = 2;
+
 
 /**
  * Permet de recuperer les parametres passees en argument lors de l'execution du programme
@@ -76,14 +81,17 @@ void checkOptions(int argc, char * argv[]){
 			int size_opt;
 	    case 's':
 	      flags += OPT_S;
+	      nbExecTaille = 0;
 	      size_opt = strlen(optarg);
 	      for (int i = 0; i < size_opt; ++i){
 	      	if (!isdigit(optarg[i])) {
 	      		printf("-s => Erreur d'argument : un nombre compris entre 0 et 9 est attendu. \n");
 	      		exit(1);
 	      	}
+
 	      	N[i] = optarg[i] - '0' + 4; //transforme optarg[i] en int
 	      	TAILLE_GRILLE[i] = 1 << N[i];
+	      	++nbExecTaille;
 	      }
 	      break;
 	    case 'm':
@@ -106,6 +114,7 @@ void checkOptions(int argc, char * argv[]){
 	      break;
 	    case 'e':
 	      flags += OPT_E;
+	      nbExecEtape = 0;
 	      size_opt = strlen(optarg);
 	      for (int i = 0; i < size_opt; ++i){
 	      	if (!isdigit(optarg[i])){
@@ -115,6 +124,7 @@ void checkOptions(int argc, char * argv[]){
 	      	int tmp = optarg[i] - '0';
 	      	if (tmp >= 0 && tmp <= 5){
 	      		ETAPE[i] = tmp;
+	      		++nbExecEtape;
 	      	} else {
 	      		printf("-e => Erreur d'argument : le nombre doit etre compris entre 0 et 5.\n");
 	      		exit(1);
@@ -123,6 +133,7 @@ void checkOptions(int argc, char * argv[]){
 	      break;
 	    case 't':
 	      flags += OPT_T;
+	      nbExecThread = 0;
 	      size_opt = strlen(optarg);
 	      for (int i = 0; i < size_opt; ++i){
 	      	if (!isdigit(optarg[i])){
@@ -131,8 +142,9 @@ void checkOptions(int argc, char * argv[]){
 	      	}
 	      	int tmp = optarg[i] - '0';
 	      	if (tmp >= 0 && tmp <= 5){
-	      		NB_THREADS[i] = NB_THREADS[i] << tmp;
+	      		NB_THREADS[i] = 1 << tmp;
 	      		NB_THREADS[i] *= NB_THREADS[i];
+	      		++nbExecThread;
 	      	} else {
 	      		printf("-t => Erreur d'argument : le nombre doit etre compris entre 0 et 5.\n");
 	      		exit(1);
@@ -234,19 +246,19 @@ int main(int argc, char * argv[]){
 	checkOptions(argc, argv);
 	double tempsCpuExecute[NB_EXECUTION], tempsUserExecute[NB_EXECUTION];
 
-	foreach(int *etape, ETAPE){
-		for(int i = 0; i < (sizeof(TAILLE_GRILLE)/sizeof(int)); ++i){
-			foreach(int *nbThread, NB_THREADS){
-				if (*etape == 0){
+	for(int i = 0; i < nbExecEtape; ++i){
+		for(int j = 0; j < nbExecTaille; ++j){
+			for(int k = 0; k < nbExecThread; ++k){
+				if (ETAPE[i] == 0){
 					printf("\t\t--- ETAPE 0 ---\n");
-					printf("*** Plaque de %d*%d, avec 1 thread ***\n", TAILLE_GRILLE[i], TAILLE_GRILLE[i]);
-					execute(tempsCpuExecute, tempsUserExecute, 0, TAILLE_GRILLE[i], N[i], 1);
+					printf("*** Plaque de %d*%d, avec 1 thread ***\n", TAILLE_GRILLE[j], TAILLE_GRILLE[j]);
+					execute(tempsCpuExecute, tempsUserExecute, 0, TAILLE_GRILLE[j], N[j], 1);
 					afficherInfos(tempsCpuExecute, tempsUserExecute);
 					break;
 				} else {
-					printf("\t\t--- ETAPE %d ---\n", *etape);
-					printf("*** Plaque de %d*%d, avec %d threads ***\n", TAILLE_GRILLE[i], TAILLE_GRILLE[i], *nbThread);
-					execute(tempsCpuExecute, tempsUserExecute, *etape, TAILLE_GRILLE[i], N[i], *nbThread);
+					printf("\t\t--- ETAPE %d ---\n", ETAPE[i]);
+					printf("*** Plaque de %d*%d, avec %d threads ***\n", TAILLE_GRILLE[j], TAILLE_GRILLE[j], NB_THREADS[k]);
+					execute(tempsCpuExecute, tempsUserExecute, ETAPE[i], TAILLE_GRILLE[j], N[j], NB_THREADS[k]);
 					afficherInfos(tempsCpuExecute, tempsUserExecute);
 				}
 			}
