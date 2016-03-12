@@ -12,7 +12,7 @@
 typedef struct {
 	double valeur;
 	double valeurTmp;
-	int estChauffante;
+	int estConstante;
 } caseDansMat;
 
 /**

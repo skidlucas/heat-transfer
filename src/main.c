@@ -13,8 +13,8 @@
 #include <math.h>
 #include <time.h>
 #include <stdlib.h>
-#include "heatTransfer.h"
 #include <sys/resource.h>
+#include "heatTransfer.h"
 
 
 /* Pour la compilation en -std=c11 */
@@ -136,7 +136,7 @@ void execute(double * tab_cpu, double * tab_user){
 		} 
 			 
 		for(int j = 0 ; j < NB_ITER ; ++j){
-			simulationIteration(TAILLE_GRILLE, N, mat);
+			initSimulation(TAILLE_GRILLE, ETAPE, NB_ITER, NB_THREADS, mat);
 		}
 		end_cpu = clock();
 		end_user = time(NULL);
