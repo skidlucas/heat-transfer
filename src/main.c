@@ -52,7 +52,7 @@ double TEMP_FROID = 0.0;
 double TEMP_CHAUD = 36.0;
 int NB_EXECUTION = 10;
 
-struct rusage usage;
+//struct rusage usage;
 
 /**
  * Permet de recuperer les parametres passees en argument lors de l'execution du programme
@@ -114,7 +114,6 @@ void checkOptions(int argc, char * argv[]){
 	      		continue;
 	      	int nb = 1 << (optarg[i] - '0');
 	      	NB_THREADS[i] = nb * nb; 
-	      	++cpt;
 	      }
 	      nbThread = cpt;
 	      break;
@@ -134,8 +133,6 @@ void checkOptions(int argc, char * argv[]){
  */
 void execute(double * tab_cpu, double * tab_user, int taille, int n, int nbEtape, int nbThread){
 	caseDansMat * mat = creationMatrice(taille, TEMP_FROID);
-	int premiereIter = 0;
-	int derniereIter = 0;
 	for(int i = 0 ; i < NB_EXECUTION ; ++i){
 		start_cpu = clock();
 		start_user = time(NULL);
@@ -156,8 +153,8 @@ void execute(double * tab_cpu, double * tab_user, int taille, int n, int nbEtape
 		printf("Valeurs finales de la plaque:\n");
 		afficheQuartMatrice(mat, taille, n);
 	}
-	if(getrusage(RUSAGE_SELF, &usage) != -1)
-		printf("empreinte mémoire max d'une execution %d kb\n", usage.ru_maxrss);
+	//if(getrusage(RUSAGE_SELF, &usage) != -1)
+	//	printf("empreinte mémoire max d'une execution %d kb\n", usage.ru_maxrss);
 	suppressionMatrice(mat);	
 }
 
@@ -207,7 +204,7 @@ int main(int argc, char * argv[]){
 		for(int j = 0 ; j < nbTaille ; ++j){
 			for(int k = 0 ; k < nbThread ; ++k){
 				if(ETAPE[i] == 0){
-					printf("Execution de l'étape 0 sur une plaque de taille %d * %d avec 1 thread\n", TAILLE_GRILLE[j], TAILLE_GRILLE[j]);
+					printf("\nExecution de l'étape 0 sur une plaque de taille %d * %d avec 1 thread\n", TAILLE_GRILLE[j], TAILLE_GRILLE[j]);
 					execute(tempsCpuExecute, tempsUserExecute, TAILLE_GRILLE[j], N[j], 0, 1);
 					if(flags & OPT_M)
 						printf("Temps total de consommation CPU d'une itération (en sec): %f\n", calculMoyenne(tempsCpuExecute));
@@ -215,12 +212,12 @@ int main(int argc, char * argv[]){
 						printf("Temps total utilisateur d'une itération (en sec): %f\n", calculMoyenne(tempsUserExecute));	
 					break;
 				} else {
-					printf("Execution de l'étape %d sur une plaque de taille %d * %d avec %d thread(s)\n", 
+					printf("\nExecution de l'étape %d sur une plaque de taille %d * %d avec %d thread(s)\n", 
 					ETAPE[i], TAILLE_GRILLE[j], TAILLE_GRILLE[j], NB_THREADS[k]);
 					execute(tempsCpuExecute, tempsUserExecute, TAILLE_GRILLE[j], N[j], ETAPE[i], NB_THREADS[k]);
-					//if(flags & OPT_M)
+					if(flags & OPT_M)
 						printf("Temps total de consommation CPU d'une itération (en sec): %f\n", calculMoyenne(tempsCpuExecute));
-					//if(flags & OPT_BIGM)
+					if(flags & OPT_BIGM)
 						printf("Temps total utilisateur d'une itération (en sec): %f\n", calculMoyenne(tempsUserExecute));	
 				}
 				

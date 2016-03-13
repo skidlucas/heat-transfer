@@ -14,7 +14,6 @@
 #include <stdlib.h>
 #include "heatTransfer.h"
 #include <pthread.h>
-#include <limits.h>
 
 /**
  * Permet de simuler une diffusion de la chaleur de maniere horizontale autour de la
@@ -22,7 +21,7 @@
  *
  * @author   Lucas Soumille, Lucas Martinez
  */
-void * simulationHori(void * infos){
+void simulationHori(void * infos){
 	caseAndIndex * matAvecInfos = (caseAndIndex *) infos;
 	caseDansMat * caseMat;
 	caseDansMat * caseMatGauche;
@@ -43,7 +42,7 @@ void * simulationHori(void * infos){
  *
  * @author   Lucas Soumille, Lucas Martinez
  */
-void * simulationVerti(void * infos){
+void simulationVerti(void * infos){
 	caseAndIndex * matAvecInfos = (caseAndIndex *)infos;
 	caseDansMat * caseMat;
 	caseDansMat * caseMatHaut;
@@ -67,7 +66,7 @@ void * simulationVerti(void * infos){
  *
  * @author   Lucas Soumille 
  */
-void * simulationEtape1(void * infos){
+void simulationEtape1(void * infos){
 	caseAndIndex * infosNbIter = (caseAndIndex *)infos;
 	int erreur;
 	for(int i = 0 ; i < (infosNbIter->nbIter) ; ++i){
@@ -92,7 +91,7 @@ void * simulationEtape1(void * infos){
  *
  * @author   Lucas Soumille 
  */
-void * simulationEtape0(void * infos){
+void simulationEtape0(void * infos){
 	caseAndIndex * infosNbIter = (caseAndIndex *)infos;
 	for(int i = 0 ; i < (infosNbIter->nbIter) ; ++i){
 		simulationHori(infos);
