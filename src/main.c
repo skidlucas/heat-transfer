@@ -16,18 +16,6 @@
 #include <sys/resource.h>
 #include "heatTransfer.h"
 
-/**
- * Macro foreach réalisée par Johannes Schaub trouvée sur stackoverflow.com 
- *
- */
-#define foreach(item, array) \
-    for(int keep = 1, \
-            count = 0,\
-            size = sizeof (array) / sizeof *(array); \
-        keep && count != size; \
-        keep = !keep, count++) \
-      for(item = (array) + count; keep; keep = !keep)
-
 
 /* Pour la compilation en -std=c11 */
 int getopt (int argc, char * const argv[],
@@ -50,11 +38,7 @@ enum Flags {
 };
 
 int flags;
-int N[] = {4, 6, 8};
-int TAILLE_GRILLE[] = {16, 64, 256};
-int NB_ITER = 10000;
-int ETAPE[] = {0, 1};
-int NB_THREADS[] = {4, 64};
+
 clock_t start_cpu, end_cpu;
 time_t start_user, end_user;
 double TEMP_FROID = 0.0;
@@ -63,6 +47,11 @@ int NB_EXECUTION = 1;
 struct rusage usage;
 
 //par défaut :
+int N[10] = {4, 6, 8};
+int TAILLE_GRILLE[10] = {16, 64, 256};
+int NB_ITER = 10000;
+int ETAPE[6] = {0, 1};
+int NB_THREADS[6] = {4, 64};
 int nbExecTaille = 3;
 int nbExecEtape = 2;
 int nbExecThread = 2;
@@ -83,6 +72,7 @@ void checkOptions(int argc, char * argv[]){
 	      flags += OPT_S;
 	      nbExecTaille = 0;
 	      size_opt = strlen(optarg);
+
 	      for (int i = 0; i < size_opt; ++i){
 	      	if (!isdigit(optarg[i])) {
 	      		printf("-s => Erreur d'argument : un nombre compris entre 0 et 9 est attendu. \n");
