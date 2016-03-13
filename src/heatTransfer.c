@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include "heatTransfer.h"
 #include <pthread.h>
+#include <limits.h>
 
 /**
  * Permet de simuler une diffusion de la chaleur de maniere horizontale autour de la
@@ -97,7 +98,6 @@ void * simulationEtape0(void * infos){
 		simulationHori(infos);
 		simulationVerti(infos);	
 	}
-	pthread_exit(NULL);
 }
 
 /**
@@ -107,21 +107,37 @@ void * simulationEtape0(void * infos){
  */
 void simulation(int taille, int nbIter, int nbThread, caseDansMat * mat, int etape){
 	int erreur;
-	pthread_t * allThread = malloc(nbThread  * sizeof(pthread_t));
 	caseAndIndex * infos = malloc(nbThread * sizeof(caseAndIndex));
-	pthread_barrier_t * barriereMil = malloc(sizeof(pthread_barrier_t));
-	pthread_barrier_t * barriereFin = malloc(sizeof(pthread_barrier_t));
-	if(allThread == NULL || infos == NULL || barriereMil == NULL || barriereFin == NULL){
+	if(infos == NULL){
 		printf("Erreur dans l'allocation mémoire dans la simulation");
 		exit(1);
 	}
 	int cpt = 0;
-	void * fonctionAExcecuter = fonctionEtape(etape);
 	int pas = sqrt(taille * taille / nbThread);
 	// si le nombre de thread est trop grand 
 	if(pas < 1){
 		pas = 1;
 		nbThread = taille * taille;
+	}
+	if(etape == 0){
+		infos[0].indXDeb = 1;
+		infos[0].indYDeb = 1;
+		infos[0].indXFin = taille + 1;
+		infos[0].indYFin = taille + 1;
+		infos[0].nbIter = nbIter;
+		infos[0].matGeneral = mat;
+		infos[0].tailleTotale = taille + 2;
+		simulationEtape0((void*)&infos[0]);
+		free(infos);
+		return;
+	}
+	void * fonctionAExecuter = fonctionEtape(etape);
+	pthread_t * allThread = malloc(nbThread  * sizeof(pthread_t));
+	pthread_barrier_t * barriereMil = malloc(sizeof(pthread_barrier_t));
+	pthread_barrier_t * barriereFin = malloc(sizeof(pthread_barrier_t));
+	if(allThread == NULL || barriereMil == NULL || barriereFin == NULL){
+		printf("Erreur dans l'allocation mémoire dans la simulation");
+		exit(1);
 	}
 	//initialisation des barrieres
 	erreur = pthread_barrier_init(barriereMil, NULL, nbThread);
@@ -146,7 +162,7 @@ void simulation(int taille, int nbIter, int nbThread, caseDansMat * mat, int eta
 			infos[cpt].barriereFin = barriereFin;
 			infos[cpt].matGeneral = mat;
 			infos[cpt].tailleTotale = taille + 2;
-			erreur = pthread_create(&(allThread[cpt]), NULL, fonctionAExcecuter,(void *) &infos[cpt]);
+			erreur = pthread_create(&(allThread[cpt]), NULL, fonctionAExecuter,(void *) &infos[cpt]);
 			if(erreur){
 				printf("Erreur dans la creation du thread (erreur %d)\n", erreur);
 				exit(1);
@@ -155,19 +171,20 @@ void simulation(int taille, int nbIter, int nbThread, caseDansMat * mat, int eta
 		}
 	}
 	//on attend la fin des threads
-	for(int i = 0 ; i < cpt ; ++i)
+	for(int i = 0 ; i < cpt ; ++i){
 		erreur = pthread_join(allThread[i], NULL);
 		if(erreur){
 			printf("Erreur dans le join d'un thread (erreur %d)\n", erreur);
 			exit(1);
 		}
+	}
 	//on rend la mémoire
 	erreur = pthread_barrier_destroy(barriereMil);
 	if(erreur) 
 		printf("Erreur dans la destruction de la barriere du milieu (erreur %d)\n", erreur);
 	erreur = pthread_barrier_destroy(barriereFin);
 	if(erreur) 
-		printf("Erreur dans la destruction de la barriere de fin (erreur %d)\n", erreur);
+		printf("Erreur dans la destruction de la barriere de fin (erreur %d)\n", erreur);		
 	free(barriereFin);
 	free(barriereMil);
 	free(infos);
@@ -181,8 +198,5 @@ void simulation(int taille, int nbIter, int nbThread, caseDansMat * mat, int eta
  * @Author Lucas Soumille
  */
 void * fonctionEtape(int etape){
-	if(etape == 0)
-		return &simulationEtape0;
-	else 
-		return &simulationEtape1;
+	return &simulationEtape1;
 }

@@ -38,13 +38,13 @@ enum Flags {
 };
 
 int flags;
-int TAILLE_GRILLE[] = {16, 64, 256};
-int N[] = {4, 6, 8};
+int TAILLE_GRILLE[10] = {16, 64, 256};
+int N[10] = {4, 6, 8};
 int nbTaille = 3;
 int NB_ITER = 10000;
-int ETAPE[] = {0, 1};
+int ETAPE[6] = {0, 1};
 int nbEtape = 2;
-int NB_THREADS[] = {4, 64};
+int NB_THREADS[6] = {4, 64};
 int nbThread = 2;
 clock_t start_cpu, end_cpu;
 time_t start_user, end_user;
@@ -65,15 +65,15 @@ void checkOptions(int argc, char * argv[]){
 		switch (c) {
 	    case 's':
 	      flags += OPT_S;
-	      nbTaille = 0;
+	      int cpt = 0; //utilisation d'une variable locale
 	      int size = strlen(optarg);
-	      for(int i = 0 ; i < size ; ++i){
+	      for(int i = 0 ; i < size ; ++i, ++cpt){
 	      	if((optarg[i] - '0') < 0 || (optarg[i] - '0') > 9)
 	      		continue;
 	      	N[i] = (optarg[i] - '0') + 4;
 	      	TAILLE_GRILLE[i] = 1 << N[i]; //equivalent a utiliser pow 
-	      	++nbTaille;
 	      }
+	      nbTaille = cpt;
 	      break;
 	    case 'm':
 	      flags += OPT_M;
@@ -95,26 +95,28 @@ void checkOptions(int argc, char * argv[]){
 	      break;
 	    case 'e':
 	      flags += OPT_E;
-	      nbEtape = 0;
+	      cpt = 0;
 	      size = strlen(optarg);
-	      for(int i = 0 ; i < size ; ++i){
+	      for(int i = 0 ; i < size ; ++i, cpt++){
 	      	if((optarg[i] - '0') < 0 || (optarg[i] - '0') > 5)
 	      		continue;
 	      	ETAPE[i] = optarg[i] - '0'; //conversion en int  
 	 		++nbEtape;
 	      }
+	      nbEtape = cpt;
 	      break;
 	    case 't':
 	      flags += OPT_T;
-	      nbThread = 0;
+	      cpt = 0;
 	      size = strlen(optarg);
-	      for(int i = 0 ; i < size ; ++i){
+	      for(int i = 0 ; i < size ; ++i, ++cpt){
 	      	if((optarg[i] - '0') < 0 || (optarg[i] - '0') > 5)
 	      		continue;
 	      	int nb = 1 << (optarg[i] - '0');
 	      	NB_THREADS[i] = nb * nb; 
-	      	++nbThread;
+	      	++cpt;
 	      }
+	      nbThread = cpt;
 	      break;
 	    default:
 	      flags+= OPT_M;
@@ -216,9 +218,9 @@ int main(int argc, char * argv[]){
 					printf("Execution de l'étape %d sur une plaque de taille %d * %d avec %d thread(s)\n", 
 					ETAPE[i], TAILLE_GRILLE[j], TAILLE_GRILLE[j], NB_THREADS[k]);
 					execute(tempsCpuExecute, tempsUserExecute, TAILLE_GRILLE[j], N[j], ETAPE[i], NB_THREADS[k]);
-					if(flags & OPT_M)
+					//if(flags & OPT_M)
 						printf("Temps total de consommation CPU d'une itération (en sec): %f\n", calculMoyenne(tempsCpuExecute));
-					if(flags & OPT_BIGM)
+					//if(flags & OPT_BIGM)
 						printf("Temps total utilisateur d'une itération (en sec): %f\n", calculMoyenne(tempsUserExecute));	
 				}
 				
