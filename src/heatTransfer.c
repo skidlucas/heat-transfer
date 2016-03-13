@@ -160,8 +160,8 @@ void lancerThread(int taille, int nbIter, caseDansMat* mat, wrappedMatrice* wrap
  */
 void lancerThreads(int taille, int etape, int nbIter, caseDansMat* mat, pthread_t* threads, 
 				   wrappedMatrice* wrappedMat, pthread_barrier_t* barriereHori, pthread_barrier_t* barriereVerti){
-	int n, ret; //nb threads créés, valeur de retour
-	void* fctEtape = simulation(etape); //suivant etape, renvoie la fonction à exécuter
+	int n, ret; //nb threads crees, valeur de retour
+	void* fctEtape = simulation(etape); //suivant etape, renvoie la fonction a executer
 
 	for(int i = 1 ; i <= taille ; i += nbCaseParThread){
 		for(int j = 1 ; j <= taille ; j += nbCaseParThread){
@@ -241,7 +241,7 @@ void initSimulation(int taille, int etape, int nbIter, int nbThread, caseDansMat
 	}
 
 	if (etape == 0){
-		lancerThread(taille, nbIter, mat, wrappedMat); //un seul thread, comportement différent
+		lancerThread(taille, nbIter, mat, wrappedMat); //un seul thread, comportement different
 	} else {
 		pthread_barrier_t* barriereHori = malloc(sizeof(pthread_barrier_t));
 		if (!barriereHori){

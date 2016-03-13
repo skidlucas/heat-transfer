@@ -46,7 +46,7 @@ double TEMP_CHAUD = 36.0;
 int NB_EXECUTION = 1;
 struct rusage usage;
 
-//par défaut :
+//par defaut :
 int N[10] = {4, 6, 8};
 int TAILLE_GRILLE[10] = {16, 64, 256};
 int NB_ITER = 10000;
@@ -229,6 +229,8 @@ void afficherInfos(double* tempsCpuExecute, double* tempsUserExecute){
 		printf("Temps total de consommation CPU d'une itération (en sec): %f\n", calculMoyenne(tempsCpuExecute));
 	if(flags & OPT_BIGM)
 		printf("Temps total utilisateur d'une itération (en sec): %f\n", calculMoyenne(tempsUserExecute));
+	if(getrusage(RUSAGE_SELF, &usage) != -1)
+		printf("Empreinte mémoire: %ld ko\n", usage.ru_maxrss);
 }
 
 
