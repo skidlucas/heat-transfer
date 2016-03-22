@@ -13,13 +13,13 @@
 
 echo "Compilation du programme"
 make
-echo -e "\nExécution du programme avec les options par défaut: "
-echo " - pour tous les scénarios implémentés (-e 0..5)"
+echo -e "\nExécution du programme avec les options par defaut: "
+echo " - pour tous les scenarios implémentes (-e 0..5)"
 echo " - avec une plaque de taille 16*16, puis 128*128 et enfin 256*256 (-s 0, -s 2, -s 4)"
 echo " - avec 4 threads puis avec 64 threads (-t 1, -t 3)"
-echo " - 10000 itérations (-i 10000)"
-echo " - en mesurant le temps CPU consommé (-m)"
-echo -e "\nPour cette version, nous exécuterons le programme itératif et le programme implémentant les barrières Posix:\n"
+echo " - 10000 iterations (-i 10000)"
+echo " - en mesurant le temps CPU consomme (-m)"
+echo -e "\nPour cette version, nous executerons le programme iteratif et le programme implementant les barrieres Posix:\n"
 
 echo "-------------------------------------------------------"
 echo -e "\t\tEXECUTION DU SCENARIO"
