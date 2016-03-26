@@ -50,10 +50,10 @@ struct rusage usage;
 int N[10] = {4, 6, 8};
 int TAILLE_GRILLE[10] = {16, 64, 256};
 int NB_ITER = 10000;
-int ETAPE[6] = {0, 1};
+int ETAPE[6] = {0, 1, 2};
 int NB_THREADS[6] = {4, 64};
 int nbExecTaille = 3;
-int nbExecEtape = 2;
+int nbExecEtape = 3;
 int nbExecThread = 2;
 
 

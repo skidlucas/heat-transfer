@@ -13,6 +13,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include "heatTransfer.h"
+#include "barriere.h"
 
 
 int vraieTaille, nbCaseParThread;
@@ -80,7 +81,7 @@ void simulationE0(wrappedMatrice* wrappedMat){
  * @author Lucas Martinez
  */
 void simulationE1(wrappedMatrice* wrappedMat){
-	int ret;
+	int ret = 0;
 	for (int i = 0; i < wrappedMat->nbIter; ++i){
 		simulationHori(wrappedMat);
 		ret = pthread_barrier_wait(wrappedMat->barriereHori);
@@ -101,6 +102,32 @@ void simulationE1(wrappedMatrice* wrappedMat){
 }
 
 /**
+ * Fonction qui lance la simulation de l'etape 2 (avec variables conditions)
+ * 
+ * @author Lucas Martinez
+ */
+void simulationE2(wrappedMatrice* wrappedMat){
+	int ret = 0;
+	for (int i = 0; i < wrappedMat->nbIter; ++i){
+		simulationHori(wrappedMat);
+		ret = barrier_wait(wrappedMat->barriereHori);
+		if (ret && ret != PTHREAD_BARRIER_SERIAL_THREAD){
+			perror("Erreur barrier_wait : barriereHori\n");
+			exit(1);
+		}
+
+		simulationVerti(wrappedMat);
+		ret = barrier_wait(wrappedMat->barriereVerti);
+		if (ret && ret != PTHREAD_BARRIER_SERIAL_THREAD){
+			perror("Erreur barrier_wait : barriereVerti\n");
+			exit(1);
+		}
+	}
+	
+	pthread_exit(NULL);
+}
+
+/**
  * Fonction qui renvoie la fonction a lancer dans le thread en fonction de l'etape en parametre
  * (N'est pas encore utile car traitement different si etape = 0)
  * 
@@ -112,7 +139,9 @@ void* simulation(int etape){
 			return &simulationE0;
 		case 1:
 			return &simulationE1;
-		//etapes 2,3...
+		case 2:
+			return &simulationE2;
+		//etapes 3,4...
 		default:
 			break;
 	}
@@ -125,7 +154,7 @@ void* simulation(int etape){
  * @author Lucas Martinez
  */
 void initBarrieres(int nbThread, pthread_barrier_t* barriereHori, pthread_barrier_t* barriereVerti){
-	int ret;
+	int ret = 0;
 
 	ret = pthread_barrier_init(barriereHori, NULL, nbThread);
 	if(ret) {
@@ -159,8 +188,9 @@ void lancerThread(int taille, int nbIter, caseDansMat* mat, wrappedMatrice* wrap
  * @author Lucas Martinez
  */
 void lancerThreads(int taille, int etape, int nbIter, caseDansMat* mat, pthread_t* threads, 
-				   wrappedMatrice* wrappedMat, pthread_barrier_t* barriereHori, pthread_barrier_t* barriereVerti){
-	int n, ret; //nb threads crees, valeur de retour
+				   wrappedMatrice* wrappedMat, void* barriereHori, void* barriereVerti){
+	int n = 0;
+	int ret = 0; //nb threads crees, valeur de retour
 	void* fctEtape = simulation(etape); //suivant etape, renvoie la fonction a executer
 
 	for(int i = 1 ; i <= taille ; i += nbCaseParThread){
@@ -184,6 +214,7 @@ void lancerThreads(int taille, int etape, int nbIter, caseDansMat* mat, pthread_
 	}
 
 	for(int i = 0 ; i < n ; ++i){
+
 		ret = pthread_join(threads[i], NULL);
 		if(ret){
 			perror("Erreur pthread_join");
@@ -198,7 +229,7 @@ void lancerThreads(int taille, int etape, int nbIter, caseDansMat* mat, pthread_
  * @author Lucas Martinez
  */
 void rendreBarrieres(pthread_barrier_t* barriereHori, pthread_barrier_t* barriereVerti){
-	int ret;
+	int ret = 0;
 	ret = pthread_barrier_destroy(barriereHori);
 	if (ret){
 		perror("Erreur pthread_barrier_destroy : barriereHori\n");
@@ -240,25 +271,54 @@ void initSimulation(int taille, int etape, int nbIter, int nbThread, caseDansMat
 		exit(1);
 	}
 
-	if (etape == 0){
-		lancerThread(taille, nbIter, mat, wrappedMat); //un seul thread, comportement different
-	} else {
-		pthread_barrier_t* barriereHori = malloc(sizeof(pthread_barrier_t));
-		if (!barriereHori){
-			perror("Erreur d'allocation mémoire, arret du programme.");
-			exit(1);
-		}
+	switch (etape){
+		case 0: 
+			lancerThread(taille, nbIter, mat, wrappedMat); //un seul thread, comportement different
+			break;
+		case 1: ;
+			pthread_barrier_t* barriereHori = malloc(sizeof(pthread_barrier_t));
+			if (!barriereHori){
+				perror("Erreur d'allocation mémoire, arret du programme.");
+				exit(1);
+			}
 
-		pthread_barrier_t* barriereVerti = malloc(sizeof(pthread_barrier_t));
-		if (!barriereVerti){
-			perror("Erreur d'allocation mémoire, arret du programme.");
-			exit(1);
-		}
+			pthread_barrier_t* barriereVerti = malloc(sizeof(pthread_barrier_t));
+			if (!barriereVerti){
+				perror("Erreur d'allocation mémoire, arret du programme.");
+				exit(1);
+			}
 
-		initBarrieres(nbThread, barriereHori, barriereVerti);
-		lancerThreads(taille, etape, nbIter, mat, threads, wrappedMat, barriereHori, barriereVerti);
-		rendreBarrieres(barriereHori, barriereVerti);
-		free(wrappedMat);
-		free(threads);
+			initBarrieres(nbThread, barriereHori, barriereVerti);
+			lancerThreads(taille, etape, nbIter, mat, threads, wrappedMat, barriereHori, barriereVerti);
+			rendreBarrieres(barriereHori, barriereVerti);
+			break;
+		case 2: ;
+			maBarriere* maBarriereHori = malloc(sizeof(maBarriere));
+			if (!maBarriereHori){
+				perror("Erreur d'allocation mémoire, arret du programme.");
+				exit(1);
+			}
+
+			maBarriere* maBarriereVerti = malloc(sizeof(maBarriere));
+			if (!maBarriereVerti){
+				perror("Erreur d'allocation mémoire, arret du programme.");
+				exit(1);
+			}
+
+			barrier_init(maBarriereHori, nbThread);
+			barrier_init(maBarriereVerti, nbThread);
+
+			lancerThreads(taille, etape, nbIter, mat, threads, wrappedMat, maBarriereHori, maBarriereVerti);
+
+			barrier_destroy(maBarriereHori);
+			barrier_destroy(maBarriereVerti);
+			free(maBarriereHori);
+			free(maBarriereVerti);	
+
+			break;
 	}
+
+	free(wrappedMat);
+	free(threads);
+
 }

@@ -14,8 +14,8 @@ typedef struct {
 	int tailleLigne;
 	int nbIter;
 	caseDansMat* matrice;
-	pthread_barrier_t* barriereHori;
-	pthread_barrier_t* barriereVerti;
+	void* barriereHori;
+	void* barriereVerti;
 } wrappedMatrice;
 
 /**
@@ -59,7 +59,7 @@ void lancerThread(int taille, int nbIter, caseDansMat* mat, wrappedMatrice* wrap
  * Fonction qui initialise les matrices enveloppees et lance les threads qui effectueront la simulation
  */
 void lancerThreads(int taille, int etape, int nbIter, caseDansMat* mat, pthread_t* threads, 
-				   wrappedMatrice* wrappedMat, pthread_barrier_t* barriereHori, pthread_barrier_t* barriereVerti);
+				   wrappedMatrice* wrappedMat, void* barriereHori, void* barriereVerti);
 
 /**
  * Fonction qui detruit les barrieres et libere la memoire

@@ -14,12 +14,12 @@
 echo "Compilation du programme"
 make
 echo -e "\nExécution du programme avec les options par défaut: "
-echo " - pour tous les scénarios implémentés (-e 01)"
+echo " - pour tous les scénarios implémentés (-e 012)"
 echo " - avec une plaque de taille 16*16, puis 128*128 et enfin 256*256 (-s 024)"
 echo " - avec 4 threads puis avec 64 threads (-t 13)"
 echo " - 10000 itérations (-i 10000)"
 echo " - en mesurant le temps CPU consommé (-m)"
-echo -e "\nPour cette deuxième version, nous exécuterons le programme itératif suivi de l'étape 1:\n"
+echo -e "\nPour cette troisième version, nous exécuterons le programme itératif, l'étape 1 et l'étape 2:\n"
 
 echo "-------------------------------------------------------"
 echo -e "\t\tEXECUTION DU PROGRAMME"
