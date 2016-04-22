@@ -6,8 +6,18 @@
  *
  */
 #include "matrice.h"
+#include <semaphore.h> 
 
-/* representation d'une barriere */
+/* representation d'une barriere utilisant les semaphores */
+typedef struct 
+{
+	unsigned limite;
+	unsigned count;
+	sem_t m;
+	sem_t attente;
+} barrier_sema_t;
+
+/* representation d'une barriere utilisant les variables conditions */
 typedef struct 
 {
 	unsigned limite;
@@ -26,6 +36,8 @@ typedef struct {
  	pthread_barrier_t * barriereFin;
  	barrier_t * maBarriereMil;
  	barrier_t * maBarriereFin;
+ 	barrier_sema_t * maBarriereSemaMil;
+ 	barrier_sema_t * maBarriereSemaFin;
  	int nbIter;
  	caseDansMat * matGeneral;
 	int tailleTotale;

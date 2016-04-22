@@ -13,7 +13,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include "heatTransfer.h"
-#include <pthread.h>
+#include <pthread.h> 
 
 /**
  * Destruction des barrieres (du mutex et de la variables condition)
@@ -60,6 +60,99 @@ void barrier_init(barrier_t * b, unsigned limite)
 	}
 	b->limite = limite;
 	b->count = 0;
+}
+
+void barrier_sema_init(barrier_sema_t * b, unsigned limite)
+{
+	int erreur;
+	erreur = sem_init(&b->m, 0, 1);
+	if(erreur)
+	{
+		printf("erreur dans l'initialisation de la semaphore m(erreur %d)\n", erreur);
+		exit(1);
+	}
+	erreur = sem_init(&b->attente, 0, 0);
+	if(erreur)
+	{
+		printf("erreur dans l'initialisation de la semaphore attente(erreur %d)\n", erreur);
+		exit(1);
+	}
+	b->limite = limite;
+	b->count = 0;
+}
+
+void barrier_sema_destroy(barrier_sema_t * b)
+{
+	int erreur;
+	erreur = sem_destroy(&b->m);
+	if(erreur)
+	{
+		printf("erreur dans la destruction de la semaphore (erreur %d)\n", erreur);
+		exit(1);
+	}
+	erreur = sem_destroy(&b->attente);
+	if(erreur)
+	{
+		printf("erreur dans la destruction de la semaphore (erreur %d)\n", erreur);
+		exit(1);
+	}
+}
+
+int barriere_sema_wait(barrier_sema_t * b)
+{
+	int erreur;
+	int returnValeur;
+	//entree en section critique
+	erreur = sem_wait(&b->m);
+	if(erreur) 
+	{
+		printf("Erreur dans le wait de la semaphore mutex (erreur %d)\n", erreur);
+		exit(1);
+	}
+	//un thread supplementaire est arrive
+	b->count++;
+	if (b->count >= b->limite)
+	{
+		//on reveille les autres threads
+		for(int i = 1 ; i < b->limite ; ++i)
+		{
+			erreur = sem_post(&b->attente);
+			if(erreur) 
+			{	
+				printf("Erreur dans le post de la semaphore attente (erreur %d)\n", erreur);
+				exit(1);
+			}
+		}
+
+		//reinitialisation du compteur
+		b->count = 0;
+		//on deverouille le mutex
+		erreur = sem_post(&b->m);
+		if(erreur) 
+		{	
+			printf("Erreur dans le post de la semaphore mutex (erreur %d)\n", erreur);
+			exit(1);
+		}
+		returnValeur = PTHREAD_BARRIER_SERIAL_THREAD;
+	}
+	else
+	{	
+		//deverouille le mutex et attente
+		erreur = sem_post(&b->m);
+		if(erreur) 
+		{	
+			printf("Erreur dans le post de la semaphore mutex (erreur %d)\n", erreur);
+			exit(1);
+		}
+		erreur = sem_wait(&b->attente);
+		if(erreur) 
+		{	
+			printf("Erreur dans le unlock du mutex (erreur %d)\n", erreur);
+			exit(1);
+		}
+		returnValeur = 0;
+	}
+	return returnValeur;
 }
 
 /**
@@ -167,6 +260,35 @@ void simulationVerti(void * infos)
 			
 		}
 	}
+}
+
+/**
+ * Fonction de simulation appelee par chaque thread pour l'etape 2
+ *
+ * @author   Lucas Soumille 
+ */
+void simulationEtape3(void * infos) 
+{
+	caseAndIndex * infosNbIter = (caseAndIndex *)infos;
+	int erreur;
+	for(int i = 0 ; i < (infosNbIter->nbIter) ; ++i){
+		simulationHori(infos);
+		erreur = barriere_sema_wait(infosNbIter->maBarriereSemaMil);
+		if(erreur && erreur != PTHREAD_BARRIER_SERIAL_THREAD)
+		{
+			printf("Erreur dans le wait de la barriere milieu (erreur %d)\n", erreur);
+			exit(1);
+		}
+		simulationVerti(infos);
+		erreur = barriere_sema_wait(infosNbIter->maBarriereSemaFin);
+		if(erreur && erreur != PTHREAD_BARRIER_SERIAL_THREAD)
+		{
+			printf("Erreur dans le wait de la barriere fin (erreur %d)\n", erreur);
+			exit(1);
+		}
+		
+	}
+	pthread_exit(NULL);
 }
 
 /**
@@ -343,8 +465,42 @@ void * initialisation(int etape, int taille, int nbThread, int nbIter, caseDansM
 				++cpt;
 			}
 		}
-		return infos;
 	}
+	else if (etape == 3)
+	{
+		//initialisation de nos barrieres avec semaphores
+		barrier_sema_t * barriereMil = malloc(sizeof(barrier_sema_t));
+		if(barriereMil == NULL)
+		{
+			printf("Erreur dans l'allocation mémoire de la barriere milieu avec condition\n");
+			exit(1);
+		}
+		barrier_sema_t * barriereFin = malloc(sizeof(barrier_sema_t));
+		if(barriereFin == NULL)
+		{
+			printf("Erreur dans l'allocation mémoire de la barriere fin avec condition\n");
+			exit(1);
+		}
+		barrier_sema_init(barriereMil, nbThread);
+		barrier_sema_init(barriereFin, nbThread);
+		for(int i = 1 ; i <= taille ; i += pas)
+		{
+			for(int j = 1 ; j <= taille ; j += pas)
+			{
+				infos[cpt].indXDeb = i;
+				infos[cpt].indYDeb = j;
+				infos[cpt].indXFin = i + pas;
+				infos[cpt].indYFin = j + pas;
+				infos[cpt].nbIter = nbIter;
+				infos[cpt].maBarriereSemaMil = barriereMil;
+				infos[cpt].maBarriereSemaFin = barriereFin;
+				infos[cpt].matGeneral = mat;
+				infos[cpt].tailleTotale = taille + 2;
+				++cpt;
+			}
+		}
+	}
+	return infos;
 }
 
 void destruction(int etape, pthread_t * allThread, void * tableauInfos, int cpt)
@@ -370,8 +526,16 @@ void destruction(int etape, pthread_t * allThread, void * tableauInfos, int cpt)
 			//destruction de nos barriere avec variable condition
 			barrier_destroy(infos[0].maBarriereMil);
 			barrier_destroy(infos[0].maBarriereFin);
-			free(infos[0].maBarriereMil);
-			free(infos[0].maBarriereFin);
+			free(infos[0].maBarriereSemaMil);
+			free(infos[0].maBarriereSemaFin);
+		}
+		else if(etape == 3)
+		{
+			//destruction de nos barriere avec variable condition
+			barrier_sema_destroy(infos[0].maBarriereSemaMil);
+			barrier_sema_destroy(infos[0].maBarriereSemaFin);
+			free(infos[0].maBarriereSemaMil);
+			free(infos[0].maBarriereSemaFin);
 		}
 	}
 }
@@ -454,4 +618,6 @@ void * fonctionEtape(int etape)
 		return &simulationEtape1;
 	else if (etape == 2)
 		return &simulationEtape2;
+	else if (etape == 3)
+		return &simulationEtape3;
 }
