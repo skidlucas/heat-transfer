@@ -41,6 +41,16 @@ void simulationE0(wrappedMatrice* wrappedMat);
 void simulationE1(wrappedMatrice* wrappedMat);
 
 /**
+ * Fonction qui lance la simulation de l'etape 2 (avec variables conditions)
+ */
+void simulationE2(wrappedMatrice* wrappedMat);
+
+/**
+ * Fonction qui lance la simulation de l'etape 3 (avec semaphores)
+ */
+void simulationE3(wrappedMatrice* wrappedMat);
+
+/**
  * Fonction qui renvoie la fonction a lancer dans le thread en fonction de l'etape en parametre
  */
 void* simulation(int etape);
@@ -58,7 +68,7 @@ void lancerThread(int taille, int nbIter, caseDansMat* mat, wrappedMatrice* wrap
 /**
  * Fonction qui initialise les matrices enveloppees et lance les threads qui effectueront la simulation
  */
-void lancerThreads(int taille, int etape, int nbIter, caseDansMat* mat, pthread_t* threads, 
+void lancerThreads(int taille, int etape, int nbIter, caseDansMat* mat, pthread_t* threads,
 				   wrappedMatrice* wrappedMat, void* barriereHori, void* barriereVerti);
 
 /**

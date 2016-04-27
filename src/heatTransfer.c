@@ -26,13 +26,13 @@ int vraieTaille, nbCaseParThread;
 void simulationHori(wrappedMatrice* wrappedMat){
 	caseDansMat * caseMat;
 	caseDansMat * caseMatGauche;
-	caseDansMat * caseMatDroite; 
+	caseDansMat * caseMatDroite;
 
 	for(int i = wrappedMat->x ; i < (wrappedMat->x + wrappedMat->tailleLigne) ; ++i){
 		for(int j = wrappedMat->y ; j < (wrappedMat->y + wrappedMat->tailleLigne) ; ++j){
 			caseMat = wrappedMat->matrice + i * vraieTaille + j;
 			caseMatGauche = wrappedMat->matrice + i * vraieTaille + (j - 1);
-			caseMatDroite = wrappedMat->matrice + i * vraieTaille + (j + 1); 
+			caseMatDroite = wrappedMat->matrice + i * vraieTaille + (j + 1);
 			caseMat->valeurTmp = (4.0 * caseMat->valeur + caseMatDroite->valeur + caseMatGauche->valeur) / 6;
 		}
 	}
@@ -56,28 +56,28 @@ void simulationVerti(wrappedMatrice* wrappedMat){
 			if(caseMat->estConstante == 1) continue;
 
 			caseMatHaut = wrappedMat->matrice + (i - 1) * vraieTaille + j;
-			caseMatBas = wrappedMat->matrice + (i + 1) * vraieTaille + j; 
+			caseMatBas = wrappedMat->matrice + (i + 1) * vraieTaille + j;
 			caseMat->valeur = (4.0 * caseMat->valeurTmp + caseMatHaut->valeurTmp + caseMatBas->valeurTmp) / 6;
-			
+
 		}
 	}
 }
 
 /**
  * Fonction qui lance la simulation de l'etape 0 (sans threads)
- * 
+ *
  * @author Lucas Martinez
  */
 void simulationE0(wrappedMatrice* wrappedMat){
 	for(int i = 0 ; i < wrappedMat->nbIter ; ++i){
 		simulationHori(wrappedMat);
-		simulationVerti(wrappedMat);	
+		simulationVerti(wrappedMat);
 	}
 }
 
 /**
  * Fonction qui lance la simulation de l'etape 1 (avec barrieres)
- * 
+ *
  * @author Lucas Martinez
  */
 void simulationE1(wrappedMatrice* wrappedMat){
@@ -97,13 +97,13 @@ void simulationE1(wrappedMatrice* wrappedMat){
 			exit(1);
 		}
 	}
-	
+
 	pthread_exit(NULL);
 }
 
 /**
  * Fonction qui lance la simulation de l'etape 2 (avec variables conditions)
- * 
+ *
  * @author Lucas Martinez
  */
 void simulationE2(wrappedMatrice* wrappedMat){
@@ -123,14 +123,40 @@ void simulationE2(wrappedMatrice* wrappedMat){
 			exit(1);
 		}
 	}
-	
+
+	pthread_exit(NULL);
+}
+
+/**
+ * Fonction qui lance la simulation de l'etape 3 (avec semaphores)
+ *
+ * @author Lucas Martinez
+ */
+void simulationE3(wrappedMatrice* wrappedMat){
+	int ret = 0;
+	for (int i = 0; i < wrappedMat->nbIter; ++i){
+		simulationHori(wrappedMat);
+		ret = barrier_sem_wait(wrappedMat->barriereHori);
+		if (ret && ret != PTHREAD_BARRIER_SERIAL_THREAD){
+			perror("Erreur barrier_sem_wait : barriereHori\n");
+			exit(1);
+		}
+
+		simulationVerti(wrappedMat);
+		ret = barrier_sem_wait(wrappedMat->barriereVerti);
+		if (ret && ret != PTHREAD_BARRIER_SERIAL_THREAD){
+			perror("Erreur barrier_sem_wait : barriereVerti\n");
+			exit(1);
+		}
+	}
+
 	pthread_exit(NULL);
 }
 
 /**
  * Fonction qui renvoie la fonction a lancer dans le thread en fonction de l'etape en parametre
  * (N'est pas encore utile car traitement different si etape = 0)
- * 
+ *
  * @author Lucas Martinez
  */
 void* simulation(int etape){
@@ -141,7 +167,8 @@ void* simulation(int etape){
 			return &simulationE1;
 		case 2:
 			return &simulationE2;
-		//etapes 3,4...
+		case 3:
+			return &simulationE3;
 		default:
 			break;
 	}
@@ -150,7 +177,7 @@ void* simulation(int etape){
 
 /**
  * Fonction qui initialise les barrieres posix en fonction du nombre de threads
- * 
+ *
  * @author Lucas Martinez
  */
 void initBarrieres(int nbThread, pthread_barrier_t* barriereHori, pthread_barrier_t* barriereVerti){
@@ -170,7 +197,7 @@ void initBarrieres(int nbThread, pthread_barrier_t* barriereHori, pthread_barrie
 
 /**
  * Fonction qui initialise la matrice enveloppee et lance la simulation de l'etape 0
- * 
+ *
  * @author Lucas Martinez
  */
 void lancerThread(int taille, int nbIter, caseDansMat* mat, wrappedMatrice* wrappedMat){
@@ -184,10 +211,10 @@ void lancerThread(int taille, int nbIter, caseDansMat* mat, wrappedMatrice* wrap
 
 /**
  * Fonction qui initialise les matrices enveloppees et lance les threads qui effectueront la simulation
- * 
+ *
  * @author Lucas Martinez
  */
-void lancerThreads(int taille, int etape, int nbIter, caseDansMat* mat, pthread_t* threads, 
+void lancerThreads(int taille, int etape, int nbIter, caseDansMat* mat, pthread_t* threads,
 				   wrappedMatrice* wrappedMat, void* barriereHori, void* barriereVerti){
 	int n = 0;
 	int ret = 0; //nb threads crees, valeur de retour
@@ -225,7 +252,7 @@ void lancerThreads(int taille, int etape, int nbIter, caseDansMat* mat, pthread_
 
 /**
  * Fonction qui detruit les barrieres et libere la memoire
- * 
+ *
  * @author Lucas Martinez
  */
 void rendreBarrieres(pthread_barrier_t* barriereHori, pthread_barrier_t* barriereVerti){
@@ -272,7 +299,7 @@ void initSimulation(int taille, int etape, int nbIter, int nbThread, caseDansMat
 	}
 
 	switch (etape){
-		case 0: 
+		case 0:
 			lancerThread(taille, nbIter, mat, wrappedMat); //un seul thread, comportement different
 			break;
 		case 1: ;
@@ -313,7 +340,31 @@ void initSimulation(int taille, int etape, int nbIter, int nbThread, caseDansMat
 			barrier_destroy(maBarriereHori);
 			barrier_destroy(maBarriereVerti);
 			free(maBarriereHori);
-			free(maBarriereVerti);	
+			free(maBarriereVerti);
+
+			break;
+		case 3: ;
+			maBarriereSem* maBarriereSemHori = malloc(sizeof(maBarriereSem));
+			if (!maBarriereSemHori){
+				perror("Erreur d'allocation mémoire, arret du programme.");
+				exit(1);
+			}
+
+			maBarriereSem* maBarriereSemVerti = malloc(sizeof(maBarriereSem));
+			if (!maBarriereSemVerti){
+				perror("Erreur d'allocation mémoire, arret du programme.");
+				exit(1);
+			}
+
+			barrier_sem_init(maBarriereSemHori, nbThread);
+			barrier_sem_init(maBarriereSemVerti, nbThread);
+
+			lancerThreads(taille, etape, nbIter, mat, threads, wrappedMat, maBarriereSemHori, maBarriereSemVerti);
+
+			barrier_sem_destroy(maBarriereSemHori);
+			barrier_sem_destroy(maBarriereSemVerti);
+			free(maBarriereSemHori);
+			free(maBarriereSemVerti);
 
 			break;
 	}

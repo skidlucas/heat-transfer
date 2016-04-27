@@ -20,10 +20,10 @@
 /* Pour la compilation en -std=c11 */
 int getopt (int argc, char * const argv[],
                    const char *optstring);
- 
+
 extern char *optarg;
 extern int optind, opterr, optopt;
- 
+
 
 
 /* Flags pour savoir quelles options sont activees */
@@ -50,10 +50,10 @@ struct rusage usage;
 int N[10] = {4, 6, 8};
 int TAILLE_GRILLE[10] = {16, 64, 256};
 int NB_ITER = 10000;
-int ETAPE[6] = {0, 1, 2};
+int ETAPE[6] = {0, 1, 2, 3};
 int NB_THREADS[6] = {4, 64};
 int nbExecTaille = 3;
-int nbExecEtape = 3;
+int nbExecEtape = 4;
 int nbExecThread = 2;
 
 
@@ -64,7 +64,7 @@ int nbExecThread = 2;
  */
 void checkOptions(int argc, char * argv[]){
 	int c;
-	
+
 	while ((c = getopt(argc , argv, "s:mMai:e:t:")) != -1){
 		switch (c) {
 			int size_opt;
@@ -90,7 +90,7 @@ void checkOptions(int argc, char * argv[]){
 	      break;
 	    case 'M':
 	      flags += OPT_BIGM;
-	      NB_EXECUTION = 10;	      
+	      NB_EXECUTION = 10;
 	      break;
 	    case 'a':
 	      flags += OPT_A;
@@ -99,7 +99,7 @@ void checkOptions(int argc, char * argv[]){
 	      flags += OPT_I;
 	      if(atoi(optarg))
 	      	NB_ITER = atoi(optarg);
-	      else 
+	      else
 	      	printf("-i => Erreur d'argument : un nombre supérieur à 0 est attendu.\n");
 	      break;
 	    case 'e':
@@ -139,7 +139,7 @@ void checkOptions(int argc, char * argv[]){
 	      		printf("-t => Erreur d'argument : le nombre doit etre compris entre 0 et 5.\n");
 	      		exit(1);
 	      	}
-	      }		
+	      }
 	      break;
 	    case '?':
 	      break;
@@ -165,10 +165,10 @@ void execute(double * tab_cpu, double * tab_user, int etape, int taille, int n, 
 		if(i == 0 && (flags & OPT_A)){ //afficher la matrice avec les valeurs initiales une seule fois
 			printf("Valeurs initiales de la plaque:\n");
 			afficheQuartMatrice(mat, taille);
-		} 
+		}
 
 		initSimulation(taille, etape, NB_ITER, nbThread, mat);
-		
+
 		end_cpu = clock();
 		end_user = time(NULL);
 		tab_cpu[i] = (double) (end_cpu - start_cpu) / CLOCKS_PER_SEC;
@@ -178,7 +178,7 @@ void execute(double * tab_cpu, double * tab_user, int etape, int taille, int n, 
 		printf("Valeurs finales de la plaque:\n");
 		afficheQuartMatrice(mat, taille);
 	}
-	suppressionMatrice(mat);	
+	suppressionMatrice(mat);
 }
 
 /**
@@ -220,8 +220,8 @@ double calculMoyenne(double * tab){
 }
 
 /**
- * Permet d'afficher les metriques 
- * 
+ * Permet d'afficher les metriques
+ *
  * @author Lucas Martinez
  */
 void afficherInfos(double* tempsCpuExecute, double* tempsUserExecute){
@@ -257,4 +257,4 @@ int main(int argc, char * argv[]){
 		}
 	}
 	return 0;
-} 
+}
