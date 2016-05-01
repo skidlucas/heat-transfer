@@ -141,7 +141,6 @@ void execute(double * tab_cpu, double * tab_user, int taille, int n, int nbEtape
 	caseDansMat * mat = creationMatrice(taille, TEMP_FROID);
 	for(int i = 0 ; i < NB_EXECUTION ; ++i)
 	{
-		printf("nb Execution %d\n", NB_EXECUTION);
 		start_cpu = clock();
 		start_user = time(NULL);
 		initMatrice(mat, taille, n, TEMP_FROID, TEMP_CHAUD);

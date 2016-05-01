@@ -549,22 +549,18 @@ void destruction(int etape, pthread_t * allThread, void * tableauInfos, int cpt)
 		else if(etape == 2)
 		{
 			//destruction de nos barriere avec variable condition
-			for(int i = 0 ; i < cpt ; ++i){
-				barrier_destroy(infos[i].maBarriereMil);
-				barrier_destroy(infos[i].maBarriereFin);
-				free(infos[i].maBarriereMil);
-				free(infos[i].maBarriereFin);
-			}
+			barrier_destroy(infos[0].maBarriereMil);
+			barrier_destroy(infos[0].maBarriereFin);
+			free(infos[0].maBarriereMil);
+			free(infos[0].maBarriereFin);
 		}
 		else if(etape == 3)
 		{
 			//destruction de nos barriere avec variable condition
-			for(int i = 0 ; i < cpt ; ++i){
-				barrier_sema_destroy(infos[i].maBarriereSemaMil);
-				barrier_sema_destroy(infos[i].maBarriereSemaFin);
-				free(infos[i].maBarriereSemaMil);
-				free(infos[i].maBarriereSemaFin);
-			}
+			barrier_sema_destroy(infos[0].maBarriereSemaMil);
+			barrier_sema_destroy(infos[0].maBarriereSemaFin);
+			free(infos[0].maBarriereSemaMil);
+			free(infos[0].maBarriereSemaFin);
 		}
 	}
 }
