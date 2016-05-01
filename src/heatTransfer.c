@@ -549,18 +549,22 @@ void destruction(int etape, pthread_t * allThread, void * tableauInfos, int cpt)
 		else if(etape == 2)
 		{
 			//destruction de nos barriere avec variable condition
-			barrier_destroy(infos[0].maBarriereMil);
-			barrier_destroy(infos[0].maBarriereFin);
-			free(infos[0].maBarriereSemaMil);
-			free(infos[0].maBarriereSemaFin);
+			for(int i = 0 ; i < cpt ; ++i){
+				barrier_destroy(infos[i].maBarriereMil);
+				barrier_destroy(infos[i].maBarriereFin);
+				free(infos[i].maBarriereMil);
+				free(infos[i].maBarriereFin);
+			}
 		}
 		else if(etape == 3)
 		{
 			//destruction de nos barriere avec variable condition
-			barrier_sema_destroy(infos[0].maBarriereSemaMil);
-			barrier_sema_destroy(infos[0].maBarriereSemaFin);
-			free(infos[0].maBarriereSemaMil);
-			free(infos[0].maBarriereSemaFin);
+			for(int i = 0 ; i < cpt ; ++i){
+				barrier_sema_destroy(infos[i].maBarriereSemaMil);
+				barrier_sema_destroy(infos[i].maBarriereSemaFin);
+				free(infos[i].maBarriereSemaMil);
+				free(infos[i].maBarriereSemaFin);
+			}
 		}
 	}
 }
@@ -622,6 +626,7 @@ void simulation(int taille, int nbIter, int nbThread, caseDansMat * mat, int eta
 		}
 	}
 	//on libere les ressources utilisees pour la synchro
+	printf("destruction\n");
 	destruction(etape, allThread, infos, cpt);	
 	//liberation des infos necessaires aux threads
 	free(infos);
