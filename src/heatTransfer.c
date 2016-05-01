@@ -62,6 +62,12 @@ void barrier_init(barrier_t * b, unsigned limite)
 	b->count = 0;
 }
 
+/**
+ * Initialisation des barrieres en particulier des deux semaphores
+ * et des compteurs
+ *
+ * @author   Lucas Soumille
+ */
 void barrier_sema_init(barrier_sema_t * b, unsigned limite)
 {
 	int erreur;
@@ -81,6 +87,11 @@ void barrier_sema_init(barrier_sema_t * b, unsigned limite)
 	b->count = 0;
 }
 
+/**
+ * Destruction des barrieres (des semaphores)
+ *
+ * @author   Lucas Soumille
+ */
 void barrier_sema_destroy(barrier_sema_t * b)
 {
 	int erreur;
@@ -98,6 +109,13 @@ void barrier_sema_destroy(barrier_sema_t * b)
 	}
 }
 
+
+/**
+ * 
+ * Implementation de la fonction barriere wait en utilisant les semaphores
+ *
+ * @author   Lucas Soumille
+ */
 int barriere_sema_wait(barrier_sema_t * b)
 {
 	int erreur;
@@ -263,7 +281,7 @@ void simulationVerti(void * infos)
 }
 
 /**
- * Fonction de simulation appelee par chaque thread pour l'etape 2
+ * Fonction de simulation appelee par chaque thread pour l'etape 3
  *
  * @author   Lucas Soumille 
  */
@@ -503,6 +521,13 @@ void * initialisation(int etape, int taille, int nbThread, int nbIter, caseDansM
 	return infos;
 }
 
+
+/**
+ * 
+ * Detruit les variables allouees
+ *
+ * @author   Lucas Soumille
+ */
 void destruction(int etape, pthread_t * allThread, void * tableauInfos, int cpt)
 {
 	if(etape != 0)

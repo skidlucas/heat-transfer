@@ -52,7 +52,7 @@ double TEMP_FROID = 0.0;
 double TEMP_CHAUD = 36.0;
 int NB_EXECUTION = 10;
 
-//struct rusage usage;
+struct rusage usage;
 
 /**
  * Permet de recuperer les parametres passees en argument lors de l'execution du programme
@@ -162,8 +162,8 @@ void execute(double * tab_cpu, double * tab_user, int taille, int n, int nbEtape
 		printf("Valeurs finales de la plaque:\n");
 		afficheQuartMatrice(mat, taille, n);
 	}
-	//if(getrusage(RUSAGE_SELF, &usage) != -1)
-	//	printf("empreinte mémoire max d'une execution %d kb\n", usage.ru_maxrss);
+	if(getrusage(RUSAGE_SELF, &usage) != -1)
+		printf("empreinte mémoire max d'une execution %ld kb\n", usage.ru_maxrss);
 	suppressionMatrice(mat);	
 }
 

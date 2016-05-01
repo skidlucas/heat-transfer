@@ -24,7 +24,7 @@ echo -e "\nPour cette version, nous executerons le programme iteratif et le prog
 echo "-------------------------------------------------------"
 echo -e "\t\tEXECUTION DU SCENARIO"
 echo "-------------------------------------------------------"
-	./bin/heatTransfer  -i 10000 -e 01 -s 024 -t 13 -m
+	./bin/heatTransfer  -i 10000 -e 0123 -s 024 -t 13 -m
 #for j in 0 2 4
 #do
 #	let "s = $j + 4"
